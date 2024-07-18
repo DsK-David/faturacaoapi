@@ -33,7 +33,7 @@ app.get("/", (req, res) => {
 // Endpoint para retornar todos os clientes
 app.get("/api/v1/cliente", mostrarTodoCliente);
 
-// Endpoint para buscar um cliente específico pelo ID da entidade
+// Endpoint para buscar todos os clientes de uma entidade 
 app.get("/api/v1/cliente/:entidadeID", async (req, res) => {
   const { entidadeID } = req.params;
   try {
