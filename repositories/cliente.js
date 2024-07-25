@@ -6,3 +6,6 @@ export async function mostrarClientes() {
 export async function mostrarClientePorEntidade(entidadeID){
   return database.select().from("cliente").where("Entidade_ID",entidadeID)
 }
+export async function adicionarClientePorEntidade(ID,FOTO_PERFIL,CODIGO,DESIG,DESCR,NIF,EMAIL,TELEFONE,Entidade_ID){
+  return database.insert({FOTO_PERFIL,CODIGO,DESIG,DESCR,NIF,EMAIL,TELEFONE,Entidade_ID}).into("cliente")
+}

@@ -1,6 +1,7 @@
 // Importação do módulo Express para criar o servidor web
 import express from "express";
-
+import { createServer } from "http";
+import { WebSocketServer } from "ws";
 // Importação de funções para interagir com o banco de dados
 import {
   mostrarClientePorEntidade,
@@ -13,6 +14,7 @@ import { auth } from "../repositories/login.js";
 import {
   mostrarProdutoPeloNome,
   mostrarProdutoPorBarCode,
+  mostrarProdutoPorCategoria,
   mostrarProdutoPorEntidade,
 } from "../repositories/produto.js";
 import mostrarTodaCategoria from "../controller/mostrarTodaCategoria.js";
@@ -21,9 +23,25 @@ import { mostrarTodaVendaPorEntidade } from "../repositories/vendas.js";
 
 // Criação da instância do aplicativo Express
 const app = express();
+const server = createServer(app);
+const wss = new WebSocketServer({ server });
 
 // Configuração do middleware para analisar corpos de requisições HTTP com formato JSON
 app.use(express.json());
+wss.on("connection", (ws) => {
+  console.log("WebSocket client connected");
+  ws.on("message", (message) => {
+    console.log(`Received: ${message}`);
+  });
+});
+
+function notifyClients(data) {
+  wss.clients.forEach((client) => {
+    if (client.readyState === WebSocket.OPEN) {
+      client.send(JSON.stringify(data));
+    }
+  });
+}
 
 // Rota raiz que retorna uma mensagem simples "Hello World!"
 app.get("/", (req, res) => {
@@ -63,6 +81,30 @@ app.get("/api/v1/produto/barcode/:barcode", async (req, res) => {
   const { barcode } = req.params;
   try {
     const produto = await mostrarProdutoPorBarCode(barcode);
+
+    // Notificar clientes WebSocket
+    notifyClients({
+      endpoint: "/api/v1/produto/barcode/:barcode",
+      action: "GET",
+      data: produto,
+    });
+
+    if (produto === undefined) {
+      return res.status(404).send({ message: "Produto não encontrado" });
+    }
+
+    res.send(produto);
+  } catch (error) {
+    res.status(500).send({ error: error.message });
+  }
+});
+
+
+// Endpoint para buscar um produto pelo nome
+app.get("/api/v1/produto/nome/:produto_nome/:entidadeID", async (req, res) => {
+  const { produto_nome,entidadeID } = req.params;
+  try {
+    const produto = await mostrarProdutoPeloNome(produto_nome,entidadeID);
     if (produto === undefined) {
       res.send({ message: "Usuario não encontrado" });
     }
@@ -71,12 +113,10 @@ app.get("/api/v1/produto/barcode/:barcode", async (req, res) => {
     res.status(500).send({ error: error.message });
   }
 });
-
-// Endpoint para buscar um produto pelo nome
-app.get("/api/v1/produto/nome/:produto_nome", async (req, res) => {
-  const { produto_nome } = req.params;
+app.get("/api/v1/produto/categoria/:categoriaID", async (req, res) => {
+  const { categoriaID } = req.params;
   try {
-    const produto = await mostrarProdutoPeloNome(produto_nome);
+    const produto = await mostrarProdutoPorCategoria(categoriaID);
     if (produto === undefined) {
       res.send({ message: "Usuario não encontrado" });
     }
@@ -91,7 +131,12 @@ app.get("/api/v1/auth/:username/:password", async (req, res) => {
   const { username, password } = req.params;
   try {
     const user = await auth(username, password);
-    res.send(user);
+    if(user.length=== 0){
+    throw new Error("Nome de Usuario ou Senha incorretos") 
+    }
+    else{
+      res.send(user);
+    }
   } catch (error) {
     res.status(500).send({ error: error.message });
   }
@@ -146,6 +191,6 @@ app.get("/api/v1/vendas/:id", async (req, res) => {
 const PORT = process.env.PORT || 3000;
 
 // Início do servidor na porta especificada
-app.listen(PORT, () => {
+server.listen(PORT, () => {
   console.log(`Servidor rodando na porta ${PORT}`);
 });

@@ -10,7 +10,7 @@ GET http://localhost:3000/api/v1/produto/fafb8b2a-d1eb-485c-a18d-3a331359a654
 ###
 GET http://localhost:3000/api/v1/produto/barcode/0009668
 ###
-GET http://localhost:3000/api/v1/produto/nome/Refeição
+GET http://localhost:3000/api/v1/produto/nome/Refeição/fafb8b2a-d1eb-485c-a18d-3a331359a654
 ###
 GET http://localhost:3000/api/v1/categoria
 ###
