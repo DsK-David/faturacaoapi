@@ -1,7 +1,9 @@
 // Importação do módulo Express para criar o servidor web
 import express from "express";
+import dotenv from "dotenv"
+dotenv.config()
+import { v4 as uuidv4 } from "uuid";
 import { createServer } from "http";
-import { WebSocketServer } from "ws";
 // Importação de funções para interagir com o banco de dados
 import {
   mostrarClientePorEntidade,
@@ -24,24 +26,24 @@ import { mostrarTodaVendaPorEntidade } from "../repositories/vendas.js";
 // Criação da instância do aplicativo Express
 const app = express();
 const server = createServer(app);
-const wss = new WebSocketServer({ server });
+function generateApiKey(){
+  return uuidv4()
+}
+function verifyApiKey(req,res,next){
+  const apikey = req.headers["authorization"]
+  const validApiKey=process.env.APIKEY
+
+  if(!apikey || apikey !== validApiKey){
+    return res.status(401).json({message:"a chave da api esta faltando"})
+  }
+  next()
+}
+
 
 // Configuração do middleware para analisar corpos de requisições HTTP com formato JSON
 app.use(express.json());
-wss.on("connection", (ws) => {
-  console.log("WebSocket client connected");
-  ws.on("message", (message) => {
-    console.log(`Received: ${message}`);
-  });
-});
 
-function notifyClients(data) {
-  wss.clients.forEach((client) => {
-    if (client.readyState === WebSocket.OPEN) {
-      client.send(JSON.stringify(data));
-    }
-  });
-}
+
 
 // Rota raiz que retorna uma mensagem simples "Hello World!"
 app.get("/", (req, res) => {
@@ -49,7 +51,7 @@ app.get("/", (req, res) => {
 });
 
 // Endpoint para retornar todos os clientes
-app.get("/api/v1/cliente", mostrarTodoCliente);
+app.get("/api/v1/cliente",verifyApiKey, mostrarTodoCliente);
 
 // Endpoint para buscar todos os clientes de uma entidade 
 app.get("/api/v1/cliente/:entidadeID", async (req, res) => {
@@ -63,7 +65,7 @@ app.get("/api/v1/cliente/:entidadeID", async (req, res) => {
 });
 
 // Endpoint para retornar todos os produtos
-app.get("/api/v1/produto", mostrarTodoProduto);
+app.get("/api/v1/produto",verifyApiKey, mostrarTodoProduto);
 
 // Endpoint para buscar um produto específico pelo ID da entidade
 app.get("/api/v1/produto/:entidadeID", async (req, res) => {
@@ -82,13 +84,7 @@ app.get("/api/v1/produto/barcode/:barcode", async (req, res) => {
   try {
     const produto = await mostrarProdutoPorBarCode(barcode);
 
-    // Notificar clientes WebSocket
-    notifyClients({
-      endpoint: "/api/v1/produto/barcode/:barcode",
-      action: "GET",
-      data: produto,
-    });
-
+   
     if (produto === undefined) {
       return res.status(404).send({ message: "Produto não encontrado" });
     }
@@ -188,7 +184,7 @@ app.get("/api/v1/vendas/:id", async (req, res) => {
 });
 
 // Porta na qual o servidor será iniciado
-const PORT = process.env.PORT || 3000;
+const PORT =  3000;
 
 // Início do servidor na porta especificada
 server.listen(PORT, () => {
