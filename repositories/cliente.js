@@ -9,3 +9,6 @@ export async function mostrarClientePorEntidade(entidadeID){
 export async function adicionarClientePorEntidade(ID,FOTO_PERFIL,CODIGO,DESIG,DESCR,NIF,EMAIL,TELEFONE,Entidade_ID){
   return database.insert({FOTO_PERFIL,CODIGO,DESIG,DESCR,NIF,EMAIL,TELEFONE,Entidade_ID}).into("cliente")
 }
+export async function deletarClientePorEntidade(clienteID,entidadeID){
+return database.delete().from("cliente_teste").where("ID",clienteID).andWhere("Entidade_ID",entidadeID)
+}
