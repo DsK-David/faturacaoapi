@@ -6,6 +6,7 @@ dotenv.config()
 import { createServer } from "http";
 // Importação de funções para interagir com o banco de dados
 import {
+  deletarClientePorEntidade,
   mostrarClientePorEntidade,
   mostrarClientes,
 } from "../repositories/cliente.js";
@@ -62,18 +63,20 @@ async function teste(venda,res){
 }
 //gerador de fatura automatica
 export async function gerarFaturaPDF(venda, res) {
+  const data=new Date()
+  const hora=`${data.getDate()}/${data.getMonth()+1}/${data.getFullYear()},${data.toLocaleTimeString()}`
 const invoiceData = {
   id: venda.Venda_ID,
   nomeCliente: venda.nomeCliente ?? "Cliente Teste",
-  data: new Date(venda.Data_Venda),
+  data: hora,
   valorTotal: parseFloat(venda.Valor_Total) || 0,
   itens: [],
 };
 
 venda.Itens_Comprados.forEach((item) => {
   invoiceData.itens.push({
-    precoUni:parseFloat( item.productPrice),
-    quantidade: parseFloat(item.quantity) || 0,
+    precoUni:parseFloat( item.PrecoDoProduto),
+    quantidade: parseFloat(item.quantidade) || 0,
     total: parseFloat(item.total) || 0,
   });
 });
@@ -138,12 +141,21 @@ console.log(process.env.APIKEY)
 
 // Rota raiz que retorna uma mensagem simples "Hello World!"
 app.get("/", (req, res) => {
-  res.send("Hello World!");
+  res.sendFile(__dirname+"/index.html");
 });
 
 // Endpoint para retornar todos os clientes
 app.get("/api/v1/cliente",verifyApiKey, mostrarTodoCliente);
-app.get("/api/v1/vendas",mostrarTodaVenda)
+
+app.delete("/api/v1/cliente/:clienteID/:entidadeID",async (req,res)=>{
+  const { clienteID,entidadeID } = req.params;
+  try {
+    const cliente = await deletarClientePorEntidade(clienteID, entidadeID);
+    res.send({ message:`Cliente com id ${clienteID} foi deletado com sucesso`})
+  } catch (error) {
+    res.status(500).send({error: error.message})
+  }
+})
 // Endpoint para buscar todos os clientes de uma entidade 
 app.get("/api/v1/cliente/:entidadeID", async (req, res) => {
   const { entidadeID } = req.params;
@@ -154,7 +166,8 @@ app.get("/api/v1/cliente/:entidadeID", async (req, res) => {
     res.status(500).send({ error: error.message });
   }
 });
-
+// endpoint para listar todas as vendas de uma entidade
+app.get("/api/v1/vendas",mostrarTodaVenda)
 // Endpoint para retornar todos os produtos
 app.get("/api/v1/produto",verifyApiKey, mostrarTodoProduto);
 
