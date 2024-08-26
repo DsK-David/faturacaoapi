@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Documentação - Faturação API</title>
+<style>
+    body {
+    font-family: 'Roboto', sans-serif;
+    margin: 0;
+    padding: 0;
+    line-height: 1.6;
+    background-color: #f7f8fc;
+    color: #2c3e50;
+}
+
+header {
+    background: linear-gradient(135deg, #007bff, #0056b3);
+    color: #fff;
+    padding: 30px 0;
+    text-align: center;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+header h1 {
+    margin: 0;
+    font-size: 3em;
+    letter-spacing: 2px;
+}
+
+header p {
+    margin: 10px 0 0;
+    font-size: 1.3em;
+    font-style: italic;
+}
+
+nav {
+    background: #34495e;
+    padding: 15px 0;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+nav ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    text-align: center;
+}
+
+nav ul li {
+    display: inline-block;
+    margin: 0 15px;
+}
+
+nav ul li a {
+    color: #ecf0f1;
+    text-decoration: none;
+    font-weight: 600;
+    padding: 10px 15px;
+    transition: all 0.3s ease;
+}
+
+nav ul li a:hover {
+    background-color: #007bff;
+    color: #fff;
+    border-radius: 5px;
+}
+
+section {
+    padding: 40px 20px;
+    max-width: 1200px;
+    margin: auto;
+    background-color: #fff;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+    border-radius: 10px;
+}
+
+h2 {
+    color: #0056b3;
+    font-size: 2.5em;
+    border-bottom: 2px solid #007bff;
+    padding-bottom: 10px;
+    margin-bottom: 30px;
+}
+
+pre {
+    background: #2c3e50;
+    color: #ecf0f1;
+    padding: 20px;
+    border-radius: 10px;
+    overflow-x: auto;
+    font-size: 1.1em;
+    box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+footer {
+    text-align: center;
+    padding: 20px 0;
+    background: linear-gradient(135deg, #007bff, #0056b3);
+    color: #fff;
+    position: relative;
+    bottom: 0;
+    width: 100%;
+    margin-top: 40px;
+    box-shadow: 0 -4px 8px rgba(0, 0, 0, 0.1);
+}
+
+footer p {
+    margin: 0;
+    font-size: 1em;
+    letter-spacing: 1px;
+}
+
+@media (max-width: 768px) {
+    header h1 {
+        font-size: 2.2em;
+    }
+
+    header p {
+        font-size: 1em;
+    }
+
+    nav ul li {
+        display: block;
+        margin: 10px 0;
+    }
+
+    nav ul li a {
+        display: block;
+        padding: 10px;
+    }
+
+    section {
+        padding: 20px;
+    }
+
+    h2 {
+        font-size: 2em;
+    }
+
+    pre {
+        font-size: 1em;
+        padding: 15px;
+    }
+}
+
+</style>
+</head>
+<body>
+    <header>
+        <h1>Faturação API</h1>
+        <p>Documentação oficial da Faturação API</p>
+    </header>
+
+    <nav>
+        <ul>
+            <li><a href="#intro">Introdução</a></li>
+            <li><a href="#endpoints">Endpoints</a></li>
+            <li><a href="#autenticacao">Autenticação</a></li>
+            <li><a href="#exemplos">Exemplos de Uso</a></li>
+            <li><a href="#erros">Tratamento de Erros</a></li>
+        </ul>
+    </nav>
+
+    <section id="intro">
+        <h2>Introdução</h2>
+        <p>A Faturação API é uma API que facilita o gerenciamento de vendas, clientes, produtos e entidades. Ela permite criar faturas automáticas em PDF e fornece uma interface para interagir com os dados de forma segura e eficiente.</p>
+    </section>
+
+    <section id="endpoints">
+        <h2>Endpoints</h2>
+        
+        <h3>Clientes</h3>
+        <ul>
+            <li><code>GET /api/v1/cliente</code> - Retorna todos os clientes cadastrados.</li>
+            <li><code>GET /api/v1/cliente/:entidadeID</code> - Retorna todos os clientes de uma entidade específica.</li>
+            <li><code>DELETE /api/v1/cliente/:clienteID/:entidadeID</code> - Deleta um cliente específico. <br><strong>Parâmetros:</strong> <br>- <code>:clienteID</code>: ID do cliente. <br>- <code>:entidadeID</code>: ID da entidade a qual o cliente pertence.</li>
+        </ul>
+
+        <h3>Vendas</h3>
+        <ul>
+            <li><code>GET /api/v1/vendas</code> - Retorna todas as vendas realizadas.</li>
+            <li><code>GET /api/v1/vendas/:id</code> - Retorna todas as vendas associadas a uma entidade específica. <br><strong>Parâmetro:</strong> <br>- <code>:id</code>: ID da entidade.</li>
+            <li><code>POST /api/v1/venda</code> - Adiciona uma nova venda e gera uma fatura em PDF.</li>
+        </ul>
+
+        <h3>Produtos</h3>
+        <ul>
+            <li><code>GET /api/v1/produto</code> - Retorna todos os produtos cadastrados.</li>
+            <li><code>GET /api/v1/produto/:entidadeID</code> - Retorna produtos de uma entidade específica. <br><strong>Parâmetro:</strong> <br>- <code>:entidadeID</code>: ID da entidade.</li>
+            <li><code>GET /api/v1/produto/barcode/:barcode</code> - Retorna um produto pelo código de barras. <br><strong>Parâmetro:</strong> <br>- <code>:barcode</code>: Código de barras do produto.</li>
+            <li><code>GET /api/v1/produto/nome/:produto_nome/:entidadeID</code> - Retorna um produto pelo nome. <br><strong>Parâmetros:</strong> <br>- <code>:produto_nome</code>: Nome do produto. <br>- <code>:entidadeID</code>: ID da entidade a qual o produto pertence.</li>
+            <li><code>GET /api/v1/produto/categoria/:categoriaID</code> - Retorna produtos de uma categoria específica. <br><strong>Parâmetro:</strong> <br>- <code>:categoriaID</code>: ID da categoria.</li>
+        </ul>
+
+        <h3>Categorias</h3>
+        <ul>
+            <li><code>GET /api/v1/categoria</code> - Retorna todas as categorias cadastradas.</li>
+            <li><code>GET /api/v1/categoria/:id</code> - Retorna uma categoria específica. <br><strong>Parâmetro:</strong> <br>- <code>:id</code>: ID da categoria.</li>
+        </ul>
+
+        <h3>Autenticação</h3>
+        <ul>
+            <li><code>GET /api/v1/auth/:username/:password</code> - Autentica um usuário com seu nome de usuário e senha. <br><strong>Parâmetros:</strong> <br>- <code>:username</code>: Nome de usuário. <br>- <code>:password</code>: Senha do usuário.</li>
+        </ul>
+
+        <h3>Entidades</h3>
+        <ul>
+            <li><code>GET /api/v1/entidade/:id</code> - Retorna informações de uma entidade específica. <br><strong>Parâmetro:</strong> <br>- <code>:id</code>: ID da entidade.</li>
+        </ul>
+    </section>
+
+    <section id="autenticacao">
+        <h2>Autenticação</h2>
+        <p>A API usa chaves de API para autenticar solicitações. Para acessar os endpoints protegidos, você deve incluir um cabeçalho <code>Authorization</code> com a sua chave de API em todas as solicitações.</p>
+    </section>
+
+    <section id="exemplos">
+        <h2>Exemplos de Uso</h2>
+        <pre><code>
+// Exemplo de requisição GET para listar todos os clientes
+fetch('/api/v1/cliente', {
+    method: 'GET',
+    headers: {
+        'Authorization': 'SuaApiKeyAqui'
+    }
+})
+.then(response => response.json())
+.then(data => console.log(data));
+        </code></pre>
+    </section>
+
+    <section id="erros">
+        <h2>Tratamento de Erros</h2>
+        <p>A API retorna códigos de status HTTP para indicar o sucesso ou falha das solicitações. Os códigos mais comuns incluem:</p>
+        <ul>
+            <li><strong>200 OK:</strong> A solicitação foi bem-sucedida.</li>
+            <li><strong>400 Bad Request:</strong> A solicitação foi malformada ou contém dados inválidos.</li>
+            <li><strong>401 Unauthorized:</strong> A chave da API está ausente ou é inválida.</li>
+            <li><strong>404 Not Found:</strong> O recurso solicitado não foi encontrado.</li>
+            <li><strong>500 Internal Server Error:</strong> Ocorreu um erro no servidor.</li>
+        </ul>
+    </section>
+
+    <footer>
+        <p>&copy; 2024 Faturação API. Todos os direitos reservados.</p>
+    </footer>
+</body>
+</html>
