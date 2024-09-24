@@ -6,9 +6,6 @@ return database.select().from("venda").where("Entidade_ID",entidadeID)
 export async function mostrarTodaAsVendas() {
   return database.select().from("vendas_teste");
 }
-// Adiciona uma nova venda para uma entidade específica
-// Função para adicionar venda por entidade
-// Função para adicionar venda por entidade
 export async function adicionarVenda(
   entidadeID,
   usuarioID,

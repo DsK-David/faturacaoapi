@@ -6,9 +6,13 @@ export async function mostrarClientes() {
 export async function mostrarClientePorEntidade(entidadeID){
   return database.select().from("cliente").where("Entidade_ID",entidadeID)
 }
-export async function adicionarClientePorEntidade(ID,FOTO_PERFIL,CODIGO,DESIG,DESCR,NIF,EMAIL,TELEFONE,Entidade_ID){
-  return database.insert({FOTO_PERFIL,CODIGO,DESIG,DESCR,NIF,EMAIL,TELEFONE,Entidade_ID}).into("cliente")
+export async function adicionarClientePorEntidade(DESIG,EMAIL,TELEFONE,Entidade_ID){
+  return database.insert({DESIG,EMAIL,TELEFONE,Entidade_ID}).into("cliente_teste")
 }
 export async function deletarClientePorEntidade(clienteID,entidadeID){
-return database.delete().from("cliente_teste").where("ID",clienteID).andWhere("Entidade_ID",entidadeID)
+return database
+  .delete()
+  .from("cliente_teste")
+  .where("ID", clienteID)
+  .andWhere("Entidade_ID", entidadeID);
 }

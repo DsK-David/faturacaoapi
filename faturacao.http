@@ -5,15 +5,53 @@ GET http://localhost:3000/api/v1/cliente/A56CA66F-54DB-4953-88FE-47C8C7D653B3
 GET http://localhost:3000/api/v1/entidade/fafb8b2a-d1eb-485c-a18d-3a331359a654
 ###
 GET http://localhost:3000/api/v1/auth/adalgisa/00022
+Authorization: david
 ###
 GET http://localhost:3000/api/v1/produto/fafb8b2a-d1eb-485c-a18d-3a331359a654
 ###
 GET http://localhost:3000/api/v1/produto/barcode/0009668
+Authorization: david
 ###
 GET http://localhost:3000/api/v1/produto/nome/Refeição/fafb8b2a-d1eb-485c-a18d-3a331359a654
+###
+GET http://localhost:3000/api/v1/vendas
+###
+POST http://localhost:3000/api/v1/venda/
+Content-Type: application/json
+
+{
+  "Entidade_ID": "entidade123",
+  "UTILIZADOR": "usuario456",
+  "Itens_Comprados": [
+    {
+      "descricao": "Produto A",
+      "quantidade": 2,
+      "preco": 50
+    },
+    {
+      "descricao": "Produto B",
+      "quantidade": 1,
+      "preco": 30
+    }
+  ],
+  "Valor_Total": 130.00,
+  "Data_Venda": "2024-08-08T12:00:00Z"
+}
+###
+POST http://localhost:3000/api/v1/cliente/
+Content-Type: application/json
+
+{
+  "DESIG":"Kaci",
+  "EMAIL":"Kaci@gmail.com",
+  "TELEFONE":"1-912-481-3268 x2011",
+  "Entidade_ID":"afb8b2a-d1eb-485c-a18d-3a331359a654"
+}
 ###
 GET http://localhost:3000/api/v1/categoria
 ###
 GET http://localhost:3000/api/v1/categoria/A56CA66F-54DB-4953-88FE-47C8C7D653B3
 ###
 GET http://localhost:3000/api/v1/vendas/A56CA66F-54DB-4953-88FE-47C8C7D653B3
+###
+DELETE http://localhost:3000/api/v1/cliente/000189f4-f5b1-a5c0-65b4-90b1b4b0fd56/A56CA66F-54DB-4953-88FE-47C8C7D653B3

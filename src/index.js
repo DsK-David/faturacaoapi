@@ -1,10 +1,8 @@
-// Importação do módulo Express para criar o servidor web
 import express from "express";
 import dotenv from "dotenv"
+import { toDataURL } from "qrcode";
 dotenv.config()
-// import { v4 as uuidv4 } from "uuid";
 import { createServer } from "http";
-// Importação de funções para interagir com o banco de dados
 import {
   deletarClientePorEntidade,
   mostrarClientePorEntidade,
@@ -25,128 +23,66 @@ import { mostrarCategoriaPorEntidade } from "../repositories/categorias.js";
 import { adicionarVenda, mostrarTodaVendaPorEntidade } from "../repositories/vendas.js";
 import mostrarTodaVenda from "../controller/mostrarTodaVenda.js";
 import path from "path";
-import ejs from "ejs";
-import pdf from "html-pdf";
-import fs from "fs";
+
+import { verifyApiKey } from "../utils/verifyApiKey.js";
+import { gerarFaturaPDF } from "../utils/gerarFaturaPDF.js";
+import { Server } from "socket.io";
+import logger from "../utils/logger.js";
+import { fileURLToPath } from "url";
+import { adicionarClientePorEntidade } from "../repositories/cliente.js";
+import { enviarDadosAoWebHook } from "../utils/enviarDadosAoWebHook.js";
+import { cacheMiddleware } from "../utils/cacheMiddleware.js";
 
 
-// Criação da instância do aplicativo Express
 const app = express();
 const server = createServer(app);
 app.set("view engine", "ejs");
-import { fileURLToPath } from "url";
+const io = new Server(server);
+io.on("connection", (socket) => {
+  console.log("Client connected");
+});
 
-// Obter o diretório atual usando import.meta.url
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Configuração do caminho para as views
+
 app.set("views", path.join(__dirname, "views"));
 
-// function generateApiKey(){
-//   return uuidv4()
-// }
-function verifyApiKey(req,res,next){
-  const apikey = req.headers["authorization"]
-  const validApiKey=process.env.APIKEY
+app.use((req, res, next) => {
+  const logMessage = `${req.method} ${req.url}`;
+  logger.info(logMessage);
+  io.emit("log", logMessage); // Emitindo log para os clientes conectados
+  next();
+})
 
-
-  if(!apikey || apikey !== validApiKey){
-    return res.status(401).json({message:"a chave da api esta faltando"})
-  }
-  next()
-}
-async function teste(venda,res){
-  venda.Itens_Comprados.forEach((item) => {
-    res.send(item.quantidade)
-  });
-}
-//gerador de fatura automatica
-export async function gerarFaturaPDF(venda, res) {
-  const data=new Date()
-  const hora=`${data.getDate()}/${data.getMonth()+1}/${data.getFullYear()},${data.toLocaleTimeString()}`
-const invoiceData = {
-  id: venda.Venda_ID,
-  nomeCliente: venda.nomeCliente ?? "Cliente Teste",
-  data: hora,
-  valorTotal: parseFloat(venda.Valor_Total) || 0,
-  itens: [],
-};
-
-venda.Itens_Comprados.forEach((item) => {
-  invoiceData.itens.push({
-    precoUni:parseFloat( item.PrecoDoProduto),
-    quantidade: parseFloat(item.quantidade) || 0,
-    total: parseFloat(item.total) || 0,
-  });
-});
-
-
-
-
-
-  try {
-    const html = await ejs.renderFile(
-      path.join(__dirname, "views", "invoice-template.ejs"),
-      { invoice: invoiceData }
-    );
-
-    const options = {
-      format: "A5",
-      border: {
-        top: "2mm",
-        right: "2mm",
-        bottom: "2mm",
-        left: "2mm",
-      },
-      footer: {
-        height: "8mm",
-        contents: {
-          default:
-            '<span style="color: #444;">{{page}}</span>/<span>{{pages}}</span>',
-        },
-      },
-    };
-
-    pdf.create(html, options).toStream((err, stream) => {
-      if (err) {
-        console.error("Erro ao criar o PDF:", err);
-        if (!res.headersSent) {
-          res.status(500).send("Erro ao gerar o PDF");
-        }
-        return;
-      }
-
-      if (!res.headersSent) {
-        res.setHeader(
-          "Content-disposition",
-          `attachment; filename="Fatura.pdf"`
-        );
-        res.setHeader("Content-type", "application/pdf");
-      }
-
-      stream.pipe(res);
-    });
-  } catch (error) {
-    console.error("Erro ao gerar o PDF:", error);
-    if (!res.headersSent) {
-      res.status(500).send("Erro ao gerar o PDF");
-    }
-  }
-}
 // Configuração do middleware para analisar corpos de requisições HTTP com formato JSON
 app.use(express.json());
 console.log(process.env.APIKEY)
 
-
-// Rota raiz que retorna uma mensagem simples "Hello World!"
 app.get("/", (req, res) => {
   res.sendFile(__dirname+"/index.html");
 });
+app.get("/logs", (req, res) => {
+  res.sendFile(__dirname + "/logs.html");
+});
 
 // Endpoint para retornar todos os clientes
-app.get("/api/v1/cliente",verifyApiKey, mostrarTodoCliente);
+app.get("/api/v1/cliente",verifyApiKey,cacheMiddleware(60), mostrarTodoCliente);
 
+app.post("/api/v1/cliente/", async (req, res) => {
+  const { DESIG, EMAIL, TELEFONE, Entidade_ID } = req.body;
+  try {
+    const cliente = await adicionarClientePorEntidade(
+      DESIG,
+      EMAIL,
+      TELEFONE,
+      Entidade_ID
+    );
+    res.send("cliente adicionado com sucesso");
+  }catch (error) {
+    res.send({ error: error.message });
+  }
+});
 app.delete("/api/v1/cliente/:clienteID/:entidadeID",async (req,res)=>{
   const { clienteID,entidadeID } = req.params;
   try {
@@ -156,8 +92,7 @@ app.delete("/api/v1/cliente/:clienteID/:entidadeID",async (req,res)=>{
     res.status(500).send({error: error.message})
   }
 })
-// Endpoint para buscar todos os clientes de uma entidade 
-app.get("/api/v1/cliente/:entidadeID", async (req, res) => {
+app.get("/api/v1/cliente/:entidadeID",cacheMiddleware(60), async (req, res) => {
   const { entidadeID } = req.params;
   try {
     const cliente = await mostrarClientePorEntidade(entidadeID);
@@ -166,13 +101,12 @@ app.get("/api/v1/cliente/:entidadeID", async (req, res) => {
     res.status(500).send({ error: error.message });
   }
 });
-// endpoint para listar todas as vendas de uma entidade
-app.get("/api/v1/vendas",mostrarTodaVenda)
+
 // Endpoint para retornar todos os produtos
-app.get("/api/v1/produto",verifyApiKey, mostrarTodoProduto);
+app.get("/api/v1/produto",cacheMiddleware(60),verifyApiKey, mostrarTodoProduto);
 
 // Endpoint para buscar um produto específico pelo ID da entidade
-app.get("/api/v1/produto/:entidadeID", async (req, res) => {
+app.get("/api/v1/produto/:entidadeID",cacheMiddleware(60),async (req, res) => {
   const { entidadeID } = req.params;
   try {
     const produto = await mostrarProdutoPorEntidade(entidadeID);
@@ -192,7 +126,6 @@ app.get("/api/v1/produto/barcode/:barcode",verifyApiKey, async (req, res) => {
     if (produto === undefined) {
       return res.status(404).send({ message: "Produto não encontrado" });
     }
-
     res.send(produto);
   } catch (error) {
     res.status(500).send({ error: error.message });
@@ -272,14 +205,14 @@ app.get("/api/v1/categoria/:id", async (req, res) => {
     res.status(500).send({ error: error.message });
   }
 });
-
+app.get("/api/v1/vendas", cacheMiddleware(60), mostrarTodaVenda);
 // Endpoint para buscar todas as vendas associadas a uma entidade específica pelo ID
 app.get("/api/v1/vendas/:id",verifyApiKey, async (req, res) => {
   const { id } = req.params;
   try {
     const vendas = await mostrarTodaVendaPorEntidade(id);
     if (vendas === undefined) {
-      res.send({ message: "Usuario não encontrado" });
+      res.send({ message: "vendas não encontrado" });
     }
     res.send(vendas);
   } catch (error) {
@@ -295,11 +228,8 @@ app.post("/api/v1/venda/", async (req, res) => {
     }
 
     const venda = await adicionarVenda(Entidade_ID, UTILIZADOR, Itens_Comprados, Valor_Total);
-    // res.send(venda)
     await gerarFaturaPDF(venda,res);
-
-   
-    // res.send(venda)
+          enviarDadosAoWebHook(venda)
   } catch (error) {
     console.error("Erro ao registrar venda:", error);
     res.status(500).json({ error: "Erro ao registrar venda" });
