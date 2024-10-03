@@ -1,26 +1,28 @@
 import express from "express";
-import dotenv from "dotenv"
+import dotenv from "dotenv";
 import { toDataURL } from "qrcode";
-dotenv.config()
+dotenv.config();
 import { createServer } from "http";
 import {
   deletarClientePorEntidade,
   mostrarClientePorEntidade,
-  mostrarClientes,
 } from "../repositories/cliente.js";
 import mostrarTodoCliente from "../controller/mostrarTodoCliente.js";
 import mostrarTodoProduto from "../controller/mostrarTodoProduto.js";
 import { entidade } from "../repositories/entidade.js";
 import { auth } from "../repositories/login.js";
 import {
-  mostrarProdutoPeloNome,  
+  mostrarProdutoPeloNome,
   mostrarProdutoPorBarCode,
   mostrarProdutoPorCategoria,
   mostrarProdutoPorEntidade,
 } from "../repositories/produto.js";
 import mostrarTodaCategoria from "../controller/mostrarTodaCategoria.js";
 import { mostrarCategoriaPorEntidade } from "../repositories/categorias.js";
-import { adicionarVenda, mostrarTodaVendaPorEntidade } from "../repositories/vendas.js";
+import {
+  adicionarVenda,
+  mostrarTodaVendaPorEntidade,
+} from "../repositories/vendas.js";
 import mostrarTodaVenda from "../controller/mostrarTodaVenda.js";
 import path from "path";
 
@@ -32,7 +34,7 @@ import { fileURLToPath } from "url";
 import { adicionarClientePorEntidade } from "../repositories/cliente.js";
 import { enviarDadosAoWebHook } from "../utils/enviarDadosAoWebHook.js";
 import { cacheMiddleware } from "../utils/cacheMiddleware.js";
-
+import { loggerMiddleware } from "../middlewares/loggerMiddleware.js";
 
 const app = express();
 const server = createServer(app);
@@ -45,7 +47,6 @@ io.on("connection", (socket) => {
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-
 app.set("views", path.join(__dirname, "views"));
 
 app.use((req, res, next) => {
@@ -53,76 +54,104 @@ app.use((req, res, next) => {
   logger.info(logMessage);
   io.emit("log", logMessage); // Emitindo log para os clientes conectados
   next();
-})
+});
 
 // Configuração do middleware para analisar corpos de requisições HTTP com formato JSON
 app.use(express.json());
-console.log(process.env.APIKEY)
+app.use(loggerMiddleware(io));
 
 app.get("/", (req, res) => {
-  res.sendFile(__dirname+"/index.html");
+  res.sendFile(__dirname + "/index.html");
 });
 app.get("/logs", (req, res) => {
   res.sendFile(__dirname + "/logs.html");
 });
 
 // Endpoint para retornar todos os clientes
-app.get("/api/v1/cliente",verifyApiKey,cacheMiddleware(60), mostrarTodoCliente);
+app.get(
+  "/api/v1/clientes",
+  verifyApiKey,
+  cacheMiddleware(60),
+  mostrarTodoCliente
+);
 
 app.post("/api/v1/cliente/", async (req, res) => {
-  const { DESIG, EMAIL, TELEFONE, Entidade_ID } = req.body;
+  const {IND_COLETIVO, DESIG,DESCR,NIF, EMAIL, TELEFONE, Entidade_ID } = req.body;
+  const NUM_CLIENTE = Math.floor(Math.random()*10) + 1
   try {
     const cliente = await adicionarClientePorEntidade(
+      IND_COLETIVO,
       DESIG,
+      DESCR,
+      NIF,
+      NUM_CLIENTE,
       EMAIL,
       TELEFONE,
       Entidade_ID
     );
-    res.send("cliente adicionado com sucesso");
-  }catch (error) {
+    res.json({
+      success: true,
+      msg: "Operação bem sucedida",
+      data: [{numeroCliente: NUM_CLIENTE,codigo: "00023", id: "1209-44fdf-34342-424dds-424" }],
+    });
+  } catch (error) {
     res.send({ error: error.message });
   }
 });
-app.delete("/api/v1/cliente/:clienteID/:entidadeID",async (req,res)=>{
-  const { clienteID,entidadeID } = req.params;
+app.delete("/api/v1/cliente/", async (req, res) => {
+  const { clienteID, entidadeID } = req.query;
   try {
     const cliente = await deletarClientePorEntidade(clienteID, entidadeID);
-    res.send({ message:`Cliente com id ${clienteID} foi deletado com sucesso`})
-  } catch (error) {
-    res.status(500).send({error: error.message})
-  }
-})
-app.get("/api/v1/cliente/:entidadeID",cacheMiddleware(60), async (req, res) => {
-  const { entidadeID } = req.params;
-  try {
-    const cliente = await mostrarClientePorEntidade(entidadeID);
-    res.send(cliente);
+    res.send({
+      message: `Cliente com id ${clienteID} foi deletado com sucesso`,
+    });
   } catch (error) {
     res.status(500).send({ error: error.message });
   }
 });
+// GET /api/v1/cliente?entidadeID=1233
+app.get(
+  "/api/v1/cliente/",
+  cacheMiddleware(60),
+  async (req, res) => {
+    const { entidadeID } = req.query;
+    try {
+      const cliente = await mostrarClientePorEntidade(entidadeID);
+      res.send(cliente);
+    } catch (error) {
+      res.status(500).send({ error: error.message });
+    }
+  }
+);
 
 // Endpoint para retornar todos os produtos
-app.get("/api/v1/produto",cacheMiddleware(60),verifyApiKey, mostrarTodoProduto);
+app.get(
+  "/api/v1/produto",
+  cacheMiddleware(60),
+  mostrarTodoProduto
+);
 
 // Endpoint para buscar um produto específico pelo ID da entidade
-app.get("/api/v1/produto/:entidadeID",cacheMiddleware(60),async (req, res) => {
-  const { entidadeID } = req.params;
-  try {
-    const produto = await mostrarProdutoPorEntidade(entidadeID);
-    res.send(produto);
-  } catch (error) {
-    res.status(500).send({ error: error.message });
+app.get(
+  "/api/v1/produto/",
+  cacheMiddleware(60),
+  async (req, res) => {
+    const { entidadeID } = req.query;
+    try {
+      const produto = await mostrarProdutoPorEntidade(entidadeID);
+      res.send(produto);
+    } catch (error) {
+      res.status(500).send({ error: error.message });
+    }
   }
-});
+);
 
 // Endpoint para buscar um produto pelo seu código de barras
-app.get("/api/v1/produto/barcode/:barcode",verifyApiKey, async (req, res) => {
-  const { barcode } = req.params;
+app.get("/api/v1/produto/barcode", async (req, res) => {
+  const { barcode } = req.query;
   try {
     const produto = await mostrarProdutoPorBarCode(barcode);
 
-   
     if (produto === undefined) {
       return res.status(404).send({ message: "Produto não encontrado" });
     }
@@ -131,43 +160,52 @@ app.get("/api/v1/produto/barcode/:barcode",verifyApiKey, async (req, res) => {
     res.status(500).send({ error: error.message });
   }
 });
-
+// depois melhorar esse endpoint e emplementar no POS
 
 // Endpoint para buscar um produto pelo nome
-app.get("/api/v1/produto/nome/:produto_nome/:entidadeID",verifyApiKey, async (req, res) => {
-  const { produto_nome,entidadeID } = req.params;
-  try {
-    const produto = await mostrarProdutoPeloNome(produto_nome,entidadeID);
-    if (produto === undefined) {
-      res.send({ message: "Usuario não encontrado" });
-    }
-    res.send(produto);
-  } catch (error) {
-    res.status(500).send({ error: error.message });
-  }
-});
-app.get("/api/v1/produto/categoria/:categoriaID",verifyApiKey, async (req, res) => {
-  const { categoriaID } = req.params;
-  try {
-    const produto = await mostrarProdutoPorCategoria(categoriaID);
-    if (produto === undefined) {
-      res.send({ message: "Usuario não encontrado" });
-    }
-    res.send(produto);
-  } catch (error) {
-    res.status(500).send({ error: error.message });
-  }
-});
+// app.get(
+//   "/api/v1/produto/nome/:produto_nome/:entidadeID",
+//   verifyApiKey,
+//   async (req, res) => {
+//     const { produto_nome, entidadeID } = req.params;
+//     try {
+//       const produto = await mostrarProdutoPeloNome(produto_nome, entidadeID);
+//       if (produto === undefined) {
+//         res.send({ message: "Usuario não encontrado" });
+//       }
+//       res.send(produto);
+//     } catch (error) {
+//       res.status(500).send({ error: error.message });
+//     }
+//   }
+// );
+
+//[] melhorar esse endpoint mas tarde para retornar produto pelo id de categoria
+
+// app.get(
+//   "/api/v1/produto/categoria/",
+//   async (req, res) => {
+//     const { categoriaID } = req.query;
+//     try {
+//       const produto = await mostrarProdutoPorCategoria(categoriaID);
+//       if (produto === undefined) {
+//         res.send({ message: "Usuario não encontrado" });
+//       }
+//       res.send(produto);
+//     } catch (error) {
+//       res.status(500).send({ error: error.message });
+//     }
+//   }
+// );
 
 // Endpoint para autenticar um usuário com base no nome de usuário e senha
-app.get("/api/v1/auth/:username/:password",verifyApiKey, async (req, res) => {
-  const { username, password } = req.params;
+app.get("/api/v1/auth", async (req, res) => {
+  const { username, password } = req.query;
   try {
     const user = await auth(username, password);
-    if(user.length=== 0){
-    throw new Error("Nome de Usuario ou Senha incorretos") 
-    }
-    else{
+    if (user.length === 0) {
+      throw new Error("Nome de Usuario ou Senha incorretos");
+    } else {
       res.send(user);
     }
   } catch (error) {
@@ -176,8 +214,8 @@ app.get("/api/v1/auth/:username/:password",verifyApiKey, async (req, res) => {
 });
 
 // Endpoint para buscar informações sobre uma entidade específica pelo ID
-app.get("/api/v1/entidade/:id",verifyApiKey, async (req, res) => {
-  const { id } = req.params;
+app.get("/api/v1/entidade/", async (req, res) => {
+  const { id } = req.query;
   try {
     const user = await entidade(id);
     if (user === undefined) {
@@ -190,7 +228,7 @@ app.get("/api/v1/entidade/:id",verifyApiKey, async (req, res) => {
 });
 
 // Endpoint para retornar todas as categorias
-app.get("/api/v1/categoria", verifyApiKey,mostrarTodaCategoria);
+app.get("/api/v1/categoria", verifyApiKey, mostrarTodaCategoria);
 
 // Endpoint para buscar uma categoria específica pelo ID
 app.get("/api/v1/categoria/:id", async (req, res) => {
@@ -207,7 +245,7 @@ app.get("/api/v1/categoria/:id", async (req, res) => {
 });
 app.get("/api/v1/vendas", cacheMiddleware(60), mostrarTodaVenda);
 // Endpoint para buscar todas as vendas associadas a uma entidade específica pelo ID
-app.get("/api/v1/vendas/:id",verifyApiKey, async (req, res) => {
+app.get("/api/v1/vendas/:id", verifyApiKey, async (req, res) => {
   const { id } = req.params;
   try {
     const vendas = await mostrarTodaVendaPorEntidade(id);
@@ -227,9 +265,14 @@ app.post("/api/v1/venda/", async (req, res) => {
       return res.status(400).json({ error: "Dados da venda incompletos" });
     }
 
-    const venda = await adicionarVenda(Entidade_ID, UTILIZADOR, Itens_Comprados, Valor_Total);
-    await gerarFaturaPDF(venda,res);
-          enviarDadosAoWebHook(venda)
+    const venda = await adicionarVenda(
+      Entidade_ID,
+      UTILIZADOR,
+      Itens_Comprados,
+      Valor_Total
+    );
+    await gerarFaturaPDF(venda, res);
+    enviarDadosAoWebHook(venda);
   } catch (error) {
     console.error("Erro ao registrar venda:", error);
     res.status(500).json({ error: "Erro ao registrar venda" });
@@ -237,7 +280,7 @@ app.post("/api/v1/venda/", async (req, res) => {
 });
 
 // Porta na qual o servidor será iniciado
-const PORT =  3000;
+const PORT = 3000;
 
 // Início do servidor na porta especificada
 server.listen(PORT, () => {

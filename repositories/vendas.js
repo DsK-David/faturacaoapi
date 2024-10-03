@@ -1,7 +1,7 @@
 import database from "../database/database.js";
 
 export async function mostrarTodaVendaPorEntidade(entidadeID){
-return database.select().from("venda").where("Entidade_ID",entidadeID)
+return database.select().from("vendas_teste").where("Entidade_ID",entidadeID)
 }
 export async function mostrarTodaAsVendas() {
   return database.select().from("vendas_teste");

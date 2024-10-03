@@ -1,6 +1,6 @@
 import database from "../database/database.js";
 
-export async function entidade(id) {
+export async function ListarEntidadePeloId(id) {
   return database
     .select()
     .from("entidade")

@@ -4,6 +4,6 @@ export default async function (request, response) {
     const resultado = await mostrarClientes();
     response.status(200).send(resultado);
   } catch (error) {
-    response.status(422).send({ error: error.message });
+    response.status(422).send({ error: error });
   }
 }

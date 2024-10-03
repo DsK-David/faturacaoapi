@@ -1,13 +1,13 @@
 import winston from "winston";
 import { adicionarLog } from "../repositories/log.js";
-
 const logger = winston.createLogger({
   level: "info",
   format: winston.format.combine(
     winston.format.timestamp(),
 
-    winston.format.printf(({ timestamp, level, message }) => {
+    winston.format.printf(({ timestamp, level, message }) =>{
       const formato = `${timestamp} [${level}]: ${message}`;
+     const log = adicionarLog(timestamp,level,message)
        return formato;
     })
     

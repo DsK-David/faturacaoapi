@@ -1,4 +1,4 @@
-# Faturacao-api-novo
+# Faturacao-api-novo-develop-test
 
 Essa api possibilita clientes interligarem suas aplicações com o serviço de cvFatura, para
 emissão automática de faturas
@@ -40,26 +40,26 @@ emissão automática de faturas
       "Entidade_ID": 1
     }
     ```
-- `DELETE /api/v1/cliente/:clienteID/:entidadeID` - Deleta um cliente por ID.
-- `GET /api/v1/cliente/:entidadeID` - Retorna os clientes de uma entidade.
+- `DELETE /api/v1/cliente?clienteid={clienteID}&entidadeid={entidadeID}` - Deleta um cliente por ID de Cliente e ID da Entidade.
+- `GET /api/v1/cliente/entidade?id={entidadeeID}` - Retorna os clientes de uma entidade.
 
 ### Produto
 
 - `GET /api/v1/produto` - Retorna todos os produtos.
-- `GET /api/v1/produto/:entidadeID` - Retorna os produtos de uma entidade.
-- `GET /api/v1/produto/barcode/:barcode` - Busca um produto pelo código de barras.
-- `GET /api/v1/produto/nome/:produto_nome/:entidadeID` - Busca um produto pelo nome.
-- `GET /api/v1/produto/categoria/:categoriaID` - Retorna produtos de uma categoria.
+- `GET /api/v1/produto/entidade?id={entidadeID}` - Retorna todo os produtos de uma entidade.
+- `GET /api/v1/produto/barcode?code={codigoBarra}` - Busca um produto pelo código de barras.
+<!-- - `GET /api/v1/produto/nome/:produto_nome/:entidadeID` - Busca um produto pelo nome. -->
+- `GET /api/v1/produto/categoria?id=6328790f-7060-1307-6853-ac3ba10f0064` - Retorna todo os produtos de uma categoria.
 
-### Categoria
+<!-- ### Categoria
 
 - `GET /api/v1/categoria` - Retorna todas as categorias.
-- `GET /api/v1/categoria/:id` - Retorna uma categoria por ID.
+- `GET /api/v1/categoria/:id` - Retorna uma categoria por ID. -->
 
 ### Vendas
 
 - `GET /api/v1/vendas` - Retorna todas as vendas.
-- `GET /api/v1/vendas/:id` - Retorna as vendas de uma entidade.
+- `GET /api/v1/venda/entidade?id={entidadeID}` - Retorna as vendas de uma entidade.
 - `POST /api/v1/venda` - Registra uma venda e gera a fatura em PDF.
   - Exemplo de body:
     ```json
@@ -75,9 +75,9 @@ emissão automática de faturas
 
 - `GET /api/v1/auth/:username/:password` - Autentica um usuário por nome de usuário e senha.
 
-### Entidades
+<!-- ### Entidades
 
-- `GET /api/v1/entidade/:id` - Retorna informações de uma entidade pelo ID.
+- `GET /api/v1/entidade/:id` - Retorna informações de uma entidade pelo ID. -->
 
 ## Logs em Tempo Real
 
@@ -102,7 +102,7 @@ Você pode visualizar os logs das requisições em tempo real acessando a rota `
 
 3. Inicie o servidor:
     ```bash
-    npm run api
+    npm run testApi
     ```
 
 ## Dependências

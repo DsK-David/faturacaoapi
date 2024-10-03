@@ -1,16 +1,14 @@
 GET http://localhost:3000/api/v1/cliente/
 ###
-GET http://localhost:3000/api/v1/cliente/A56CA66F-54DB-4953-88FE-47C8C7D653B3
+GET http://localhost:3000/api/v1/cliente?entidadeID=A56CA66F-54DB-4953-88FE-47C8C7D653B3
 ###
-GET http://localhost:3000/api/v1/entidade/fafb8b2a-d1eb-485c-a18d-3a331359a654
+GET http://localhost:3000/api/v1/entidade?id=fafb8b2a-d1eb-485c-a18d-3a331359a654
 ###
-GET http://localhost:3000/api/v1/auth/adalgisa/00022
-Authorization: david
+GET http://localhost:3000/api/v1/auth?username=emirian.pinto&password=00017
 ###
-GET http://localhost:3000/api/v1/produto/fafb8b2a-d1eb-485c-a18d-3a331359a654
+GET http://localhost:3000/api/v1/produto?entidadeID=fafb8b2a-d1eb-485c-a18d-3a331359a654
 ###
-GET http://localhost:3000/api/v1/produto/barcode/0009668
-Authorization: david
+GET http://localhost:3000/api/v1/produto/barcode?barcode=0009668
 ###
 GET http://localhost:3000/api/v1/produto/nome/Refeição/fafb8b2a-d1eb-485c-a18d-3a331359a654
 ###
@@ -41,17 +39,21 @@ Content-Type: application/json
 POST http://localhost:3000/api/v1/cliente/
 Content-Type: application/json
 
-{
-  "DESIG":"Kaci",
-  "EMAIL":"Kaci@gmail.com",
-  "TELEFONE":"1-912-481-3268 x2011",
-  "Entidade_ID":"afb8b2a-d1eb-485c-a18d-3a331359a654"
+{ "IND_COLETIVO":"S",
+  "DESIG":"David",
+  "DESCR":"INDIVIDIO DAVID",
+  "NIF":154458805,
+  "EMAIL":"da33.veiga@gmail.com",
+  "TELEFONE":9996293,
+  "Entidade_ID":"fafb8b2a-d1eb-485c-a18d-3a331359a654"
 }
 ###
-GET http://localhost:3000/api/v1/categoria
+GET http://localhost:3000/api/v1/produto/categoria?categoriaID=04076833-c005-297b-2970-d6e25aaa8af2
 ###
 GET http://localhost:3000/api/v1/categoria/A56CA66F-54DB-4953-88FE-47C8C7D653B3
 ###
-GET http://localhost:3000/api/v1/vendas/A56CA66F-54DB-4953-88FE-47C8C7D653B3
+GET http://localhost:3000/api/v1/venda/entidade?id=A56CA66F-54DB-4953-88FE-47C8C7D653B3
+###
+GET http://localhost:3000/api/v1/venda/
 ###
 DELETE http://localhost:3000/api/v1/cliente/000189f4-f5b1-a5c0-65b4-90b1b4b0fd56/A56CA66F-54DB-4953-88FE-47C8C7D653B3

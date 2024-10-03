@@ -1,6 +1,6 @@
 import database from "../database/database.js";
 export function adicionarLog(timestamp,level,message){
-return database("log")
+return database("logs")
   .insert({
     time_stamps: timestamp,
     level: level,
