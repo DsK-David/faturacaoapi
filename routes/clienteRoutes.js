@@ -1,8 +1,12 @@
 import { Router } from "express";
+import crypto from "crypto"
 import mostrarTodoCliente from "../controller/mostrarTodoCliente.js";
 import { adicionarClientePorEntidade, deletarClientePorEntidade, mostrarClientePorEntidade } from "../repositories/cliente.js";
 import { verifyApiKey } from "../middlewares/verifyApiKey.js";
 import { cacheMiddleware } from "../utils/cacheMiddleware.js";
+import { generateRandomHashId } from "../middlewares/generateRandomHash.js";
+
+console.log(generateRandomHashId())
 const router = Router();
 // GET http://localhost:3000/api/v1/cliente/
 router.get("/", mostrarTodoCliente);
