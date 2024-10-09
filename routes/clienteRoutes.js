@@ -1,12 +1,28 @@
 import { Router } from "express";
-import crypto from "crypto"
+import express from "express";
+import bodyParser from "body-parser";
 import mostrarTodoCliente from "../controller/mostrarTodoCliente.js";
 import { adicionarClientePorEntidade, deletarClientePorEntidade, mostrarClientePorEntidade } from "../repositories/cliente.js";
 import { verifyApiKey } from "../middlewares/verifyApiKey.js";
 import { cacheMiddleware } from "../utils/cacheMiddleware.js";
 import { generateRandomHashId } from "../middlewares/generateRandomHash.js";
+import { generateUniqueNumber } from "../middlewares/generateCode.js";
+import { createDateFromFormat } from "../middlewares/formatData.js";
+const data = new Date()
 
-console.log(generateRandomHashId())
+// Exemplo de uso:
+const formattedDate = createDateFromFormat(data);
+console.log(formattedDate);
+
+
+
+
+const app = express();
+
+app.use(bodyParser.json()); // Processa JSON
+app.use(bodyParser.urlencoded({ extended: false })); // Processa dados form-urlencoded
+
+
 const router = Router();
 // GET http://localhost:3000/api/v1/cliente/
 router.get("/", mostrarTodoCliente);
@@ -16,17 +32,48 @@ router.get("/entidade",async (req,res)=>{
    const clienteByEntidade = await mostrarClientePorEntidade(id)
    res.json(clienteByEntidade)
 })
+router.post("/test", (req, res) => {
+  console.log(req.body);
+  res.json({ message: "Dados recebidos", data: req.body });
+});
+
 // POST http://localhost:3000/api/v1/cliente/
 router.post("/", async (req, res, next) => {
+  console.log(req.body)
+  const ID = generateRandomHashId()
+  const NUM_CLIENTE = Math.floor(Math.random() * 10) + 1;
+  const CODIGO = generateUniqueNumber()
+  const DT_REGISTO = createDateFromFormat(data);
+  const DT_ALTERACAO = createDateFromFormat(data);
   try {
-    const { DESIG, EMAIL, TELEFONE, Entidade_ID } = req.body;
+    const { IND_COLETIVO, DESIG, DESCR, NIF, EMAIL, TELEFONE,ENDERECO,ESTADO,glb_user_ID, Entidade_ID } = req.body;
     const cliente = await adicionarClientePorEntidade(
+      ID,
+      CODIGO,
+      IND_COLETIVO,
       DESIG,
+      DESCR,
+      NIF,
+      NUM_CLIENTE,
       EMAIL,
       TELEFONE,
+      ENDERECO,
+      DT_REGISTO,
+      DT_ALTERACAO,
+      ESTADO,
+      glb_user_ID,
       Entidade_ID
     );
-    res.send("Cliente adicionado com sucesso");
+     res.json({
+       success: true,
+       msg: "Operação bem sucedida",
+       data: [
+         {
+           numeroCliente: NUM_CLIENTE,
+           id: ID,
+         },
+       ],
+     });
   } catch (error) {
     next(error); // Middleware global de erros
   }
