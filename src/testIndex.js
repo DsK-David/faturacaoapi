@@ -3,6 +3,7 @@ import express from "express";
 import dotenv from "dotenv";
 import path from "path";
 import { createServer } from "http";
+import bodyParser from "body-parser"
 import { fileURLToPath } from "url";
 import { Server } from "socket.io";
 import routes from "../routes/index.js";
@@ -16,7 +17,8 @@ dotenv.config();
 const app = express();
 const server = createServer(app);
 const io = new Server(server);
-
+app.use(bodyParser.json()); // Processa JSON
+app.use(bodyParser.urlencoded({ extended: false }));
 // Configuração do WebSocket para logs
 io.on("connection", (socket) => {
   console.log("Client connected");
