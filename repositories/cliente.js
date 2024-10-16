@@ -50,3 +50,33 @@ return database
   .where("ID", clienteID)
   .andWhere("Entidade_ID", entidadeID);
 }
+export async function atualizarClientePorEntidade(
+  clienteID,
+  entidadeID,
+  dadosAtualizados
+) {
+  return database("cliente")
+    .where("ID", clienteID)
+    .andWhere("Entidade_ID", entidadeID)
+    .update(dadosAtualizados)
+    .returning("*");
+}
+// const clienteID = 1; // ID do cliente que será atualizado
+// const entidadeID = 2; // ID da entidade do cliente
+// const dadosAtualizados = {
+//   DESIG: "Novo Nome do Cliente", // Atualizar o nome
+//   EMAIL: "novoemail@cliente.com", // Atualizar o e-mail
+//   TELEFONE: "987654321", // Atualizar o telefone
+//   DT_ALTERACAO: new Date(), // Atualizar a data de alteração
+// };
+
+// try {
+//   const resultado = await atualizarClientePorEntidade(
+//     clienteID,
+//     entidadeID,
+//     dadosAtualizados
+//   );
+//   console.log("Cliente atualizado com sucesso:", resultado);
+// } catch (erro) {
+//   console.error("Erro ao atualizar cliente:", erro);
+// }
