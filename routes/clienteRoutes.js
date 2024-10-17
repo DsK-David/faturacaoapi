@@ -3,26 +3,14 @@ import express from "express";
 import bodyParser from "body-parser";
 import mostrarTodoCliente from "../controller/mostrarTodoCliente.js";
 import { adicionarClientePorEntidade, deletarClientePorEntidade, mostrarClientePorEntidade } from "../repositories/cliente.js";
-import { verifyApiKey } from "../middlewares/verifyApiKey.js";
-import { cacheMiddleware } from "../utils/cacheMiddleware.js";
-import { generateRandomHashId } from "../middlewares/generateRandomHash.js";
-import { generateUniqueNumber } from "../middlewares/generateCode.js";
-import { createDateFromFormat } from "../middlewares/formatData.js";
+import { verifyApiKey } from "../utils/verifyApiKey.js";
+import { cacheMiddleware } from "../middlewares/cacheMiddleware.js";
+import { generateRandomHashId } from "../utils/generateRandomHash.js";
+import { generateUniqueNumber } from "../utils/generateCode.js";
+import { createDateFromFormat } from "../utils/formatData.js";
+import { respostaPadrao } from "../utils/responseDefault.js";
 const data = new Date()
-
-// Exemplo de uso:
-const formattedDate = createDateFromFormat(data);
-console.log(formattedDate);
-
-
-
-
 const app = express();
-
-app.use(bodyParser.json()); // Processa JSON
-app.use(bodyParser.urlencoded({ extended: false })); // Processa dados form-urlencoded
-
-
 const router = Router();
 // GET http://localhost:3000/api/v1/cliente/
 router.get("/", mostrarTodoCliente);
@@ -30,16 +18,13 @@ router.get("/", mostrarTodoCliente);
 router.get("/entidade",async (req,res)=>{
   const { id } =req.query 
    const clienteByEntidade = await mostrarClientePorEntidade(id)
-   res.json(clienteByEntidade)
+   res.json(respostaPadrao(true, "Operação bem sucedida",clienteByEntidade));
 })
-router.post("/test", (req, res) => {
-  console.log(req.body);
-  res.json({ message: "Dados recebidos", data: req.body });
-});
-
+// router.update("/",async (req,res)=>{
+//   const {ID,Entidade_I}
+// })
 // POST http://localhost:3000/api/v1/cliente/
 router.post("/", async (req, res, next) => {
-  console.log(req.body)
   const ID = generateRandomHashId()
   const NUM_CLIENTE = Math.floor(Math.random() * 10) + 1;
   const CODIGO = generateUniqueNumber()
@@ -64,16 +49,7 @@ router.post("/", async (req, res, next) => {
       glb_user_ID,
       Entidade_ID
     );
-     res.json({
-       success: true,
-       msg: "Operação bem sucedida",
-       data: [
-         {
-           numeroCliente: NUM_CLIENTE,
-           id: ID,
-         },
-       ],
-     });
+     res.json(respostaPadrao(true, "Operação bem sucedida",cliente));
   } catch (error) {
     next(error); // Middleware global de erros
   }
@@ -83,9 +59,7 @@ router.delete("/", async (req, res, next) => {
   try {
     const { clienteid, entidadeid } = req.query; // Pegando os valores de query string
     const cliente = await deletarClientePorEntidade(clienteid, entidadeid);
-    res.send({
-      message: `Cliente com id ${clienteid} foi deletado com sucesso`,
-    });
+    res.json(respostaPadrao(true,"Operação bem sucedida",cliente));
   } catch (error) {
     next(error);
   }

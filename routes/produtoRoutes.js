@@ -1,7 +1,9 @@
 import { Router } from "express";
 import mostrarTodoProduto from "../controller/mostrarTodoProduto.js";
 import { mostrarProdutoPorBarCode, mostrarProdutoPorCategoria, mostrarProdutoPorEntidade } from "../repositories/produto.js";
-import { cacheMiddleware } from "../utils/cacheMiddleware.js";
+import { cacheMiddleware } from "../middlewares/cacheMiddleware.js";
+import { respostaPadrao } from "../utils/responseDefault.js";
+
 
 const router = Router()
 // GET http://localhost:3000/api/v1/produto
@@ -13,7 +15,7 @@ router.get("/entidade",
     const { id } = req.query;
     try {
       const produto = await mostrarProdutoPorEntidade(id);
-      res.send(produto);
+      res.json(respostaPadrao(true, "Operação bem sucedida",produto));
     } catch (error) {
       res.status(500).send({ error: error.message });
     }
@@ -26,9 +28,9 @@ router.get("/barcode", async (req, res) => {
     const produto = await mostrarProdutoPorBarCode(code);
 
     if (produto === undefined) {
-      return res.status(404).send({ message: "Produto não encontrado" });
+      return res.status(404).json(respostaPadrao(true,"Produto não encontrado",produto));
     }
-    res.send(produto);
+    res.json(respostaPadrao(true, "Operação bem sucedida",produto));
   } catch (error) {
     res.status(500).send({ error: error.message });
   }
@@ -40,9 +42,9 @@ router.get("/categoria",
     try {
       const produto = await mostrarProdutoPorCategoria(id);
       if (produto === undefined) {
-        res.send({ message: "Usuario não encontrado" });
+        res.json(respostaPadrao(false,"produtos dessa cantegoria não encontrados",produto));
       }
-      res.send(produto);
+      res.json(respostaPadrao(true, "Operação bem sucedida",produto));
     } catch (error) {
       res.status(500).send({ error: error.message });
     }
