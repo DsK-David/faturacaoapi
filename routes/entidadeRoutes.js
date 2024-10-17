@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { deletarEntidade, ListarEntidadePeloId } from "../repositories/entidade.js";
+import { respostaPadrao } from "../utils/responseDefault.js";
 const router = Router();
 
 
@@ -9,37 +10,21 @@ router.get("/", async (req, res) => {
   try {
     const entidade = await ListarEntidadePeloId(id)
      if (entidade === undefined) {
-       res.send({ message: "entidade não encontrado" });
+       res.json(respostaPadrao(false, "Entidade não encontrado",entidade));
      }
-     res.send(entidade);
+     res.json(respostaPadrao(true, "Operação bem sucedida", entidade));
   } catch (error) {
     
   }
   
 });
-// POST /api/v1/cliente
-// router.post("/", async (req, res, next) => {
-//   try {
-//     const { DESIG, EMAIL, TELEFONE, Entidade_ID } = req.body;
-//     const cliente = await adicionarClientePorEntidade(
-//       DESIG,
-//       EMAIL,
-//       TELEFONE,
-//       Entidade_ID
-//     );
-//     res.send("Cliente adicionado com sucesso");
-//   } catch (error) {
-//     next(error); // Middleware global de erros
-//   }
-// });
+
 // DELETE /api/v1/entidade?clienteID=123&entidadeID=456
 router.delete("/", async (req, res, next) => {
   try {
     const {id} = req.query; // Pegando os valores de query string
     const entidade = await deletarEntidade(id);
-    res.send({
-      message: `entidade com id ${clienteID} foi deletado com sucesso`,
-    });
+    res.json(respostaPadrao(true, "Entidade deletada com sucesso", entidade));
   } catch (error) {
     next(error);
   }
