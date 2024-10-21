@@ -65,9 +65,6 @@ router.put("/", async (req, res, next) => {
     // Remover campos que não devem ser atualizados
     delete dadosAtualizados.Entidade_ID; // Garante que `Entidade_ID` não será atualizado
     delete dadosAtualizados.ID; // Garante que `ID` também não seja atualizado
-
-    console.log(dadosAtualizados); // Debug para verificar os dados que estão sendo enviados
-
     // Adicionar DT_ALTERACAO aos dados que estão sendo atualizados
     dadosAtualizados.DT_ALTERACAO = DT_ALTERACAO;
 
@@ -76,8 +73,14 @@ router.put("/", async (req, res, next) => {
       entidade,
       dadosAtualizados
     );
+    const resposta=[
+      {
+        "ID": id,
+        "entidade": entidade,
+      }
+    ]
 
-    res.json(respostaPadrao(true, "Operação bem sucedida", cliente));
+    res.json(respostaPadrao(true, "Operação bem sucedida", resposta));
   } catch (error) {
     next(error); // Middleware global de erros
   }
