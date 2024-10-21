@@ -2,7 +2,7 @@ import { Router } from "express";
 import express from "express";
 import bodyParser from "body-parser";
 import mostrarTodoCliente from "../controller/mostrarTodoCliente.js";
-import { adicionarClientePorEntidade, deletarClientePorEntidade, mostrarClientePorEntidade } from "../repositories/cliente.js";
+import { adicionarClientePorEntidade, atualizarClientePorEntidade, deletarClientePorEntidade, mostrarClientePorEntidade } from "../repositories/cliente.js";
 import { verifyApiKey } from "../utils/verifyApiKey.js";
 import { cacheMiddleware } from "../middlewares/cacheMiddleware.js";
 import { generateRandomHashId } from "../utils/generateRandomHash.js";
@@ -54,6 +54,35 @@ router.post("/", async (req, res, next) => {
     next(error); // Middleware global de erros
   }
 });
+
+router.put("/", async (req, res, next) => {
+  const { id, entidade } = req.query;
+  const DT_ALTERACAO = createDateFromFormat(data); // Suponho que 'data' seja algo acessível aqui
+
+  try {
+    const dadosAtualizados = req.body;
+
+    // Remover campos que não devem ser atualizados
+    delete dadosAtualizados.Entidade_ID; // Garante que `Entidade_ID` não será atualizado
+    delete dadosAtualizados.ID; // Garante que `ID` também não seja atualizado
+
+    console.log(dadosAtualizados); // Debug para verificar os dados que estão sendo enviados
+
+    // Adicionar DT_ALTERACAO aos dados que estão sendo atualizados
+    dadosAtualizados.DT_ALTERACAO = DT_ALTERACAO;
+
+    const cliente = await atualizarClientePorEntidade(
+      id,
+      entidade,
+      dadosAtualizados
+    );
+
+    res.json(respostaPadrao(true, "Operação bem sucedida", cliente));
+  } catch (error) {
+    next(error); // Middleware global de erros
+  }
+});
+
 // DELETE /api/v1/cliente?clienteid=123&entidadeid=456
 router.delete("/", async (req, res, next) => {
   try {
