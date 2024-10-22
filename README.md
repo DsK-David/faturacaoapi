@@ -1,104 +1,90 @@
+# 🌐 Faturacao-api-novo-develop-test
 
-# Faturacao-api-novo-develop-test
+## ✨ Visão Geral
 
-## Visão Geral
+Esta API permite a integração de aplicações ao serviço **cvFatura** para automação na emissão de faturas. Com ela, você pode gerenciar **clientes**, **vendas** e **produtos**, além de consultar **categorias** e **entidades**. Ideal para quem busca facilidade em operações **CRUD** (Create, Read, Update, Delete).
 
-Essa api possibilita clientes interligarem suas aplicações com o serviço de cvFatura, para
-emissão automática de faturas. A API permite realizar operações CRUD (Create, Read, Update, Delete) em clientes, vendas e produtos, além de consultar categorias e entidades.
+## 🚀 Configuração
 
-<!-- ## Funcionalidades Principais
-
-- Gerenciamento de clientes
-- Gestão de vendas
-- Manutenção de produtos
-- Consulta de categorias
-- Autenticação básica via API Key -->
-
-
-
-## Configuração
-
-Para configurar o projeto:
+Siga os passos abaixo para configurar o projeto:
 
 1. Instale as dependências:
-   ```
+   ```bash
    npm install
    ```
 
-<!-- 2. Configure variáveis de ambiente no arquivo `.env`:
-   ```
-   PORT=3000
-   DB_HOST=localhost
-   DB_PORT=3306
-   DB_USER=dsd_david
-   DB_PASSWORD=2513
-   DB_NAME=faturacao
-   ``` -->
-
 2. Execute o servidor:
-   ```
+   ```bash
    npm testApi
    ```
 
-## Endpoints
+## 📋 Endpoints
 
-### Clientes
+### 🧑‍💼 Clientes
 
-#### Listar Todos os Clientes
-GET `/api/v1/cliente/`
+#### 🔍 Listar Todos os Clientes
+**GET** `/api/v1/cliente/`
 
-Retorno:
+**Exemplo de Retorno**:
 ```json
-[
-  {
-    "id": "uuid",
-    "nomeCliente": "Nome do Cliente",
-    "numeroCliente": "Numero do Cliente",
-    "codigo": "Codigo",
-    "tipoCliente": "Tipo de Cliente",
-    "endereco": "Endereco",
-    "telefone": "Telefone",
-    "email": "Email",
-    "dataRegistro": "YYYY-MM-DD HH:MM:SS",
-    "dataAlteracao": "YYYY-MM-DD HH:MM:SS",
-    "estado": "Estado",
-    "userId": "UUID do Usuario",
-    "entidadeId": "UUID da Entidade"
-  }
-]
+{
+  "success": true,
+  "msg": "Operação bem sucedida",
+  "data": [
+    {
+      "id": "uuid",
+      "nomeCliente": "Nome do Cliente",
+      "numeroCliente": "Numero do Cliente",
+      "codigo": "Codigo",
+      "tipoCliente": "Tipo de Cliente",
+      "endereco": "Endereco",
+      "telefone": "Telefone",
+      "email": "Email",
+      "dataRegistro": "YYYY-MM-DD HH:MM:SS",
+      "dataAlteracao": "YYYY-MM-DD HH:MM:SS",
+      "estado": "Estado",
+      "userId": "UUID do Usuario",
+      "entidadeId": "UUID da Entidade"
+    }
+  ]
+}
 ```
 
-#### Buscar Cliente por Entidade
-GET ` /api/v1/cliente/entidade?id="<uuid_entidade>"`
+#### 🔍 Buscar Cliente por Entidade
+**GET** `/api/v1/cliente/entidade?id="<uuid_entidade>"`
 
-Parâmetros:
-- `entidadeID`: UUID da entidade
+- **Parâmetros**:
+  - `entidadeID`: UUID da entidade
 
-Retorno:
+**Exemplo de Retorno**:
 ```json
-[
-  {
-    "id": "uuid",
-    "nomeCliente": "Nome do Cliente",
-    "numeroCliente": "Numero do Cliente",
-    "codigo": "Codigo",
-    "tipoCliente": "Tipo de Cliente",
-    "endereco": "Endereco",
-    "telefone": "Telefone",
-    "email": "Email",
-    "dataRegistro": "YYYY-MM-DD HH:MM:SS",
-    "dataAlteracao": "YYYY-MM-DD HH:MM:SS",
-    "estado": "Estado",
-    "userId": "UUID do Usuario",
-    "entidadeId": "UUID da Entidade"
-  }
-]
+{
+  "success": true,
+  "msg": "Operação bem sucedida",
+  "data": [
+    {
+      "id": "uuid",
+      "nomeCliente": "Nome do Cliente",
+      "numeroCliente": "Numero do Cliente",
+      "codigo": "Codigo",
+      "tipoCliente": "Tipo de Cliente",
+      "endereco": "Endereco",
+      "telefone": "Telefone",
+      "email": "Email",
+      "dataRegistro": "YYYY-MM-DD HH:MM:SS",
+      "dataAlteracao": "YYYY-MM-DD HH:MM:SS",
+      "estado": "Estado",
+      "userId": "UUID do Usuario",
+      "entidadeId": "UUID da Entidade"
+    }
+  ]
+}
 ```
 
-#### Adicionar Cliente
-POST `/api/v1/cliente/`
+#### ➕ Adicionar Cliente
+**POST** `/api/v1/cliente/`
 
-Corpo da Requisição:
+**Corpo da Requisição**:
 ```json
 {
   "IND_COLETIVO": "C",
@@ -118,11 +104,11 @@ Corpo da Requisição:
 }
 ```
 
-Retorno:
+**Exemplo de Retorno**:
 ```json
 {
   "success": true,
-  "msg": "Cliente adicionado com sucesso",
+  "msg": "Operação bem sucedida",
   "data": {
     "numeroCliente": "Numero",
     "id": "UUID do Cliente"
@@ -130,87 +116,116 @@ Retorno:
 }
 ```
 
-#### Deletar Cliente
-DELETE `/api/v1/cliente?clienteid="<uuid_cliente>"&entidadeid="<uuid_entidade>"`
+#### 🔄 Atualizar Cliente
+**PUT** `/api/v1/cliente?id="<UIID_da_entidade>"&entidade="<UIID_da_Entidade>"`
 
-Parâmetros:
-- `id_cliente`: UUID do cliente
-- `id_entidade`: UUID da entidade
+**Parâmetros da Query**:
+- `id`: UUID do cliente
+- `entidade`: UUID da entidade
 
-Retorno:
+**Corpo da Requisição** (dados a serem atualizados):
 ```json
 {
-  "message": "Cliente deletado com sucesso"
+  "IND_COLETIVO": "C",
+  "DESIG": "Nome Atualizado",
+  "DESCR": "Descricao Atualizada",
+  "NIF": "987654321",
+  "EMAIL": "novoemail@example.com",
+  "TELEFONE": "987654321",
+  "ENDERECO": "Rua Y, Nº Z",
+  "ESTADO": "Ativo"
 }
 ```
 
-### Produtos
-
-#### Listar Produtos por Entidade
-GET `/api/v1/produto/entidade/id=<uuid_entidade>`
-
-Parâmetros:
-- `entidadeID`: UUID da entidade
-
-Retorno:
+**Exemplo de Retorno**:
 ```json
-[
-  {
-    "id": "uuid",
-    "nome": "Nome do Produto",
-    "descricao": "Descricao",
-    "valorUnitario": "Valor Unitario",
-    "categoria": "Categoria",
+{
+  "success": true,
+  "msg": "Cliente atualizado com sucesso",
+  "data":[ {
+    "id": "UUID do Cliente",
     "entidadeId": "UUID da Entidade"
   }
 ]
-```
-
-#### Buscar Produto por Barcode
-GET `/api/v1/produto/barcode?code="<123456>"`
-
-Parâmetros:
-- `code`: Código de barras do produto
-
-Retorno:
-```json
-{
-  "id": "uuid",
-  "nome": "Nome do Produto",
-  "descricao": "Descricao",
-  "valorUnitario": "Valor Unitario",
-  "categoria": "Categoria",
-  "entidadeId": "UUID da Entidade"
 }
 ```
 
-<!-- #### Buscar Produtos por Nome e Entidade
-GET `/api/v1/produto/nome/<nome>?entidadeID=<uuid_entidade>`
+#### 🗑️ Deletar Cliente
+**DELETE** `/api/v1/cliente?clienteid="<uuid_cliente>"&entidadeid="<uuid_entidade>"`
 
-Parâmetros:
-- `nome`: Partial do nome do produto
-- `entidadeID`: UUID da entidade
+- **Parâmetros**:
+  - `id_cliente`: UUID do cliente
+  - `id_entidade`: UUID da entidade
 
-Retorno:
+**Exemplo de Retorno**:
 ```json
-[
-  {
-    "id": "uuid",
-    "nome": "Nome do Produto",
-    "descricao": "Descricao",
-    "valorUnitario": "Valor Unitario",
-    "categoria": "Categoria",
-    "entidadeId": "UUID da Entidade"
-  }
-]
-``` -->
+{
+  "success": true,
+  "msg": "Cliente deletado com sucesso",
+  "data": null
+}
+```
 
-<!-- ### Vendas
+---
 
-#### Criar Nova Venda
-POST `/api/v1/venda/`
+### 📦 Produtos
 
-Corpo da Requisição:
+#### 🔍 Listar Produtos por Entidade
+**GET** `/api/v1/produto/entidade/id=<uuid_entidade>`
+
+- **Parâmetros**:
+  - `entidadeID`: UUID da entidade
+
+**Exemplo de Retorno**:
+```json
+{
+  "success": true,
+  "msg": "Operação bem sucedida",
+  "data": [
+    {
+      "id": "uuid",
+      "nome": "Nome do Produto",
+      "descricao": "Descricao",
+      "valorUnitario": "Valor Unitario",
+      "categoria": "Categoria",
+      "entidadeId": "UUID da Entidade"
+    }
+  ]
+}
+```
+
+#### 🔍 Buscar Produto por Barcode
+**GET** `/api/v1/produto/barcode?code="<123456>"`
+
+- **Parâmetros**:
+  - `code`: Código de barras do produto
+
+**Exemplo de Retorno**:
+```json
+{
+  "success": true,
+  "msg": "Operação bem sucedida",
+  "data": [
+    {
+      "id": "uuid",
+      "nome": "Nome do Produto",
+      "descricao": "Descricao",
+      "valorUnitario": "Valor Unitario",
+      "categoria": "Categoria",
+      "entidadeId": "UUID da Entidade"
+    }
+  ]
+}
+```
+
+---
+
+### 🛒 Vendas
+
+#### ➕ Criar Nova Venda
+**POST** `/api/v1/venda/`
+
+**Corpo da Requisição**:
 ```json
 {
   "Entidade_ID": "UUID da Entidade",
@@ -227,106 +242,52 @@ Corpo da Requisição:
 }
 ```
 
-Retorno:
+#### 🔍 Listar Vendas
+**GET** `/api/v1/venda/`
+
+**Exemplo de Retorno**:
 ```json
 {
   "success": true,
-  "msg": "Venda criada com sucesso",
-  "data": {
-    "id": "UUID da Venda",
-    "valorTotal": 10.99,
-    "itens": [
-      {
-        "produtoId": "UUID do Produto",
-        "quantidade": 1,
-        "preco": 10.99
-      }
-    ]
-  }
+  "msg": "Operação bem sucedida",
+  "data": [
+    {
+      "id": "UUID da Venda",
+      "valorTotal": 10.99,
+      "itens": [
+        {
+          "produtoId": "UUID do Produto",
+          "quantidade": 1,
+          "preco": 10.99
+        }
+      ],
+      "dataVenda": "YYYY-MM-DDTHH:MM:SS",
+      "utilizadorId": "UUID do Usuario",
+      "entidadeId": "UUID da Entidade"
+    }
+  ]
 }
-``` -->
-
-#### Listar Vendas
-GET `/api/v1/venda/`
-
-Retorno:
-```json
-[
-  {
-    "id": "UUID da Venda",
-    "valorTotal": 10.99,
-    "itens": [
-      {
-        "produtoId": "UUID do Produto",
-        "quantidade": 1,
-        "preco": 10.99
-      }
-    ],
-    "dataVenda": "YYYY-MM-DDTHH:MM:SS",
-    "utilizadorId": "UUID do Usuario",
-    "entidadeId": "UUID da Entidade"
-  }
-]
 ```
 
-#### Buscar Vendas por Entidade
-GET `/api/v1/venda/entidade?id=<uuid_entidade>`
+---
 
-Parâmetros:
-- `entidadeID`: UUID da entidade
+### 📌 Observações Finais
 
-Retorno:
-```json
-[
-  {
-    "id": "UUID da Venda",
-    "valorTotal": 10.99,
-    "itens": [
-      {
-        "produtoId": "UUID do Produto",
-        "quantidade": 1,
-        "preco": 10.99
-      }
-    ],
-    "dataVenda": "YYYY-MM-DDTHH:MM:SS",
-    "utilizadorId": "UUID do Usuario",
-    "entidadeId": "UUID da Entidade"
-  }
-]
-```
-
-<!-- ### Autenticação
-
-A autenticação básica é realizada através de uma chave API. Adicione a chave API ao cabeçalho da requisição:
-
-```
-Authorization: Bearer sua_chave_api
-``` -->
-
-<!-- ## Formato de Dados
-
-Todos os endpoints retornam JSON. Os campos retornados podem variar dependendo do endpoint, mas geralmente incluem:
-
-- `id`: UUID único identificador
-- `nome`: Nome do objeto (cliente, produto, venda)
-- `descricao`: Descrição detalhada
-- `valor`: Preço unitário ou total
-- `data`: Data e hora do registro ou atualização
-- `estado`: Status do objeto (ativo, inativo, etc.)
-- `userId`: UUID do usuário associado
-- `entidadeId`: UUID da entidade relacionada -->
-
-
-## Observações Finais
-
-<!-- Este projeto utiliza Knex.js para interação com o banco de dados MySQL. As tabelas principais são:
+Este projeto utiliza **Knex.js** para interação com o banco de dados **MySQL**. As tabelas principais são:
 
 - `cliente`
 - `venda`
 - `produto`
 - `categoria`
-- `entidade` -->
+- `entidade`
 
-As rotas são definidas em `/routes/clienteRoutes.js`, `/routes/produtoRoutes.js` e `/routes/vendaRoutes.js`. O template de fatura está localizado em `src/views/invoice-template.ejs`.
+As rotas estão organizadas em:
 
-<!-- Para obter mais informações sobre como usar cada endpoint específicamente, consulte a documentação completa da API. -->
+- `/routes/clienteRoutes.js`
+- `/routes/produtoRoutes.js`
+- `/routes/vendaRoutes.js`
+
+O template de fatura em PDF está localizado em:  
+📄 `src/views/invoice-template.ejs`
+
+---
