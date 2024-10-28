@@ -3,9 +3,28 @@ import database from "../database/database.js";
 export async function mostrarClientes() {
   return database.select().from("cliente");
 }
-export async function mostrarClientePorEntidade(entidadeID){
-  return database.select().from("cliente").where("Entidade_ID",entidadeID)
+export async function mostrarClientePorEntidade(entidadeID, limit, offset) {
+  // Seleciona os clientes com base no ID da entidade e aplica limite e offset
+  const clientes = await database
+    .select()
+    .from("cliente")
+    .where("Entidade_ID", entidadeID)
+    .limit(limit)
+    .offset(offset);
+
+  // Conta o total de clientes para cálculo de páginas
+  const totalResult = await database
+    .count("ID as count")
+    .from("cliente")
+    .where("Entidade_ID", entidadeID)
+    .first();
+
+  return {
+    clientes,
+    total: totalResult.count,
+  };
 }
+
 export async function adicionarClientePorEntidade(
   ID,
   CODIGO,
@@ -61,22 +80,8 @@ export async function atualizarClientePorEntidade(
     .update(dadosAtualizados)
     .returning("*");
 }
-// const clienteID = 1; // ID do cliente que será atualizado
-// const entidadeID = 2; // ID da entidade do cliente
-// const dadosAtualizados = {
-//   DESIG: "Novo Nome do Cliente", // Atualizar o nome
-//   EMAIL: "novoemail@cliente.com", // Atualizar o e-mail
-//   TELEFONE: "987654321", // Atualizar o telefone
-//   DT_ALTERACAO: new Date(), // Atualizar a data de alteração
-// };
 
-// try {
-//   const resultado = await atualizarClientePorEntidade(
-//     clienteID,
-//     entidadeID,
-//     dadosAtualizados
-//   );
-//   console.log("Cliente atualizado com sucesso:", resultado);
-// } catch (erro) {
-//   console.error("Erro ao atualizar cliente:", erro);
-// }
+
+export async function mostrarClientePorNif(nif){
+  return database.select().from("cliente").where("NIF",nif);
+}
