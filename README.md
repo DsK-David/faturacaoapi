@@ -15,10 +15,31 @@ Siga os passos abaixo para configurar o projeto:
 
 2. Execute o servidor:
    ```bash
-   npm testApi
+   npm run API
    ```
 
 ## 📋 Endpoints
+### 🔐 Auth
+#### - Faz authenticação de um usario no sistema
+
+**GET** `/api/v1/auth?username=USERNAME&password=PASSWORD`
+- **Parâmetros**:
+  - `username`:Nome de Usuario
+  - `password`:Senha do Usuario
+
+**Exemplo de Retorno**:
+```json
+{
+  "success": true,
+  "msg": "Operação bem sucedida",
+  "data": {
+    "id": "uuid",
+    "username": "nome_do_usuario",
+    "codigo": "Password",
+    "entidade": "uiid_da_entide"
+  }
+}
+```
 
 ### 🧑‍💼 Clientes
 
@@ -49,12 +70,52 @@ Siga os passos abaixo para configurar o projeto:
   ]
 }
 ```
+#### 🔍  Buscar CLiente por numero de NIF
+**GET** `/api/v1/cliente/nif?nif=NUMERO_NIF`
+- **Parâmetros**:
+  - `nif`:NIF do cliete
+
+**Exemplo de Retorno**:
+```json
+{
+  "success": true,
+  "msg": "Operação bem sucedida",
+  "data": [
+    {
+      "ID": "000189f4-f5b1-a5c0-65b4-90b1b4b0fd5c",
+      "FOTO_PERFIL": null,
+      "CODIGO": "03409",
+      "IND_COLETIVO": "C",
+      "DESIG": "Neusa Mendes Gomes",
+      "DESCR": null,
+      "NIF": "121192024",
+      "NUM_CLIENTE": null,
+      "EMAIL": "",
+      "TELEFONE": "",
+      "GEOGRAFIA_ID": null,
+      "COORDENADAS": null,
+      "ENDERECO": null,
+      "DT_REGISTO": "2022-11-10T12:28:42.000Z",
+      "DT_ALTERACAO": "2022-11-10T12:28:42.000Z",
+      "ESTADO": "A",
+      "PESSOA": null,
+      "PESSOA_CONTACTO": null,
+      "IS_CLIETE_VALIDADO": null,
+      "APLICAR_IMPOSTOS": "SIM",
+      "MOTIVO_NAO_APLICAR_IMPOSTO": "5",
+      "pr_enquadramento_ID": null,
+      "glb_user_ID": "9BF4FA24-3C50-40BD-848C-4E8C22FB92A0",
+      "Entidade_ID": "A56CA66F-54DB-4953-88FE-47C8C7D653B3"
+    }
+  ]
+}
+```
 
 #### 🔍 Buscar Cliente por Entidade
 **GET** `/api/v1/cliente/entidade?id="<uuid_entidade>"`
 
 - **Parâmetros**:
-  - `entidadeID`: UUID da entidade
+  - `id`: UUID da entidade
 
 **Exemplo de Retorno**:
 ```json

@@ -6,8 +6,8 @@ export async function mostrarProduto() {
 export async function mostrarProdutoPorEntidade(entidadeID) {
   return database.select().from("produto").where("Entidade_ID",entidadeID);
 }
-export async function mostrarProdutoPorBarCode(barcode){
-  return database.select().from("produto").where("Codigo_barra",barcode)
+export async function mostrarProdutoPorBarCode(barcode,entidadeID){
+  return database.select().from("produto").where("Codigo_barra",barcode).where("Entidade_ID",entidadeID)
 }
 export async function mostrarProdutoPeloNome(nome_produto,entidadeID){
   return database.select().from("produto").where("DESIG",nome_produto).where("Entidade_ID",entidadeID)

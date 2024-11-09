@@ -1,4 +1,5 @@
 import { mostrarProduto } from "../repositories/produto.js";
+import { respostaPadrao } from "../utils/responseDefault.js";
 export default async function (req,res){
     try {
         const resultado = await mostrarProduto()

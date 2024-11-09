@@ -1,18 +1,20 @@
 GET http://localhost:3000/api/v1/cliente/
 ###
-GET http://localhost:3000/api/v1/cliente?entidadeID=A56CA66F-54DB-4953-88FE-47C8C7D653B3
+GET http://localhost:3000/api/v1/cliente/entidade?id=A56CA66F-54DB-4953-88FE-47C8C7D653B3
+###
+GET http://localhost:3000/api/v1/cliente/nif?nif=121192024
 ###
 GET http://localhost:3000/api/v1/entidade?id=fafb8b2a-d1eb-485c-a18d-3a331359a654
 ###
 GET http://localhost:3000/api/v1/auth?username=emirian.pinto&password=00017
 ###
-GET http://localhost:3000/api/v1/produto?entidadeID=fafb8b2a-d1eb-485c-a18d-3a331359a654
+GET http://localhost:3000/api/v1/produto/entidade?id=fafb8b2a-d1eb-485c-a18d-3a331359a654
 ###
 GET http://localhost:3000/api/v1/produto/barcode?barcode=0009668
 ###
 GET http://localhost:3000/api/v1/produto/nome/Refeição/fafb8b2a-d1eb-485c-a18d-3a331359a654
 ###
-GET http://localhost:3000/api/v1/vendas
+GET http://localhost:3000/api/v1/venda
 ###
 POST http://localhost:3000/api/v1/venda/
 Content-Type: application/json
@@ -38,17 +40,21 @@ Content-Type: application/json
 ###
 POST http://localhost:3000/api/v1/cliente/
 Content-Type: application/json
-
-{ "IND_COLETIVO":"S",
+{ 
+  "IND_COLETIVO":"C",
   "DESIG":"David",
   "DESCR":"INDIVIDIO DAVID",
   "NIF":154458805,
-  "EMAIL":"da33.veiga@gmail.com",
+  "EMAIL":"david.veiga@gmail.com",
   "TELEFONE":9996293,
+  "ENDERECO":"Mountain",
+  "ESTADO":"A",
+  "glb_user_ID":"9BF4FA24-3C50-40BD-848C-4E8C22FB92A0",  
   "Entidade_ID":"fafb8b2a-d1eb-485c-a18d-3a331359a654"
 }
+
 ###
-GET http://localhost:3000/api/v1/produto/categoria?categoriaID=04076833-c005-297b-2970-d6e25aaa8af2
+GET http://localhost:3000/api/v1/produto/categoria?id=6328790f-7060-1307-6853-ac3ba10f0064
 ###
 GET http://localhost:3000/api/v1/categoria/A56CA66F-54DB-4953-88FE-47C8C7D653B3
 ###
@@ -57,3 +63,34 @@ GET http://localhost:3000/api/v1/venda/entidade?id=A56CA66F-54DB-4953-88FE-47C8C
 GET http://localhost:3000/api/v1/venda/
 ###
 DELETE http://localhost:3000/api/v1/cliente/000189f4-f5b1-a5c0-65b4-90b1b4b0fd56/A56CA66F-54DB-4953-88FE-47C8C7D653B3
+###
+PUT http://localhost:3000/api/v1/cliente?id=b42193f5730883f38c3d609f0ac9d110&entidade=fafb8b2a-d1eb-485c-a18d-3a331359a654
+Content-Type: application/json
+
+{ 
+  
+  "DESIG":"David silva"
+  
+}
+###
+POST http://localhost:3000/api/v1/fatura
+{ 
+  "pr_serie_id":"0c0f832b-39c9-9ccd-d92f-130329efd74c",
+  "utilizador":"06939e46-1947-eb30-6a86-718e6aab26cb",
+  "entidade_id":"A56CA66F-54DB-4953-88FE-47C8C7D653B3",
+  "tipoFaturaID":"42a3dbe8-0792-e315-ebfc-fa678372a8a4",
+  "condicoes_pagamento":"4829F2B7-18DF-49A2-AD0B-0DCED8ECA9AD",
+  "cliente_codigo":"000189f4-f5b1-a5c0-65b4-90b1b4b0fd5c",
+  "produtos":[
+    {
+      "produto_id":"017642d3-7d43-354b-4963-fe7ad83d3ec3",
+      "qttd":1,
+      "preco_unid":0.0000,
+      "desc_comercial":0
+    }
+  ],
+  "requisicao":"Fatura teste",
+  "desconto-financeiro":10,  
+  "nota":"teste rota"
+}
+

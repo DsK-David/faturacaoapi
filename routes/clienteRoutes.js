@@ -2,27 +2,58 @@ import { Router } from "express";
 import express from "express";
 import bodyParser from "body-parser";
 import mostrarTodoCliente from "../controller/mostrarTodoCliente.js";
-import { adicionarClientePorEntidade, atualizarClientePorEntidade, deletarClientePorEntidade, mostrarClientePorEntidade } from "../repositories/cliente.js";
+import { adicionarClientePorEntidade, atualizarClientePorEntidade, deletarClientePorEntidade, mostrarClientePorEntidade, mostrarClientePorNif } from "../repositories/cliente.js";
 import { verifyApiKey } from "../utils/verifyApiKey.js";
-import { cacheMiddleware } from "../middlewares/cacheMiddleware.js";
+import {setCache} from "../middlewares/cacheMiddleware.js";
 import { generateRandomHashId } from "../utils/generateRandomHash.js";
 import { generateUniqueNumber } from "../utils/generateCode.js";
 import { createDateFromFormat } from "../utils/formatData.js";
-import { respostaPadrao } from "../utils/responseDefault.js";
+import { respostaPadrao } from "../utils/responseDefault.js"
+
 const data = new Date()
-const app = express();
 const router = Router();
+
 // GET http://localhost:3000/api/v1/cliente/
-router.get("/", mostrarTodoCliente);
-// GET http://localhost:3000/api/v1/cliente/entidade?id=A56CA66F-54DB-4953-88FE-47C8C7D653B3
-router.get("/entidade",async (req,res)=>{
-  const { id } =req.query 
-   const clienteByEntidade = await mostrarClientePorEntidade(id)
-   res.json(respostaPadrao(true, "Operação bem sucedida",clienteByEntidade));
-})
-// router.update("/",async (req,res)=>{
-//   const {ID,Entidade_I}
-// })
+router.get("/", mostrarTodoCliente,);
+// GET http://localhost:3000/api/v1/cliente/entidade?id=A56CA66F-54DB-4953-88FE-47C8C7D653B3&page=1&limit=10
+router.get("/entidade", async (req, res) => {
+  const { id, page = 1, limit = 10 } = req.query;
+  const offset = (page - 1) * limit;
+
+  try {
+    const { clientes, total } = await mostrarClientePorEntidade(
+      id,
+      limit,
+      offset
+    );
+    const totalPages = Math.ceil(total / limit);
+
+    res.json({
+      success: true,
+      message: "Operação bem sucedida",
+      data: clientes,
+      meta: {
+        totalItems: total,
+        totalPages,
+        currentPage: parseInt(page),
+        itemsPerPage: parseInt(limit),
+      },
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Erro ao buscar clientes",
+      error: error.message,
+    });
+  }
+});
+
+ // http://localhost:3000/api/v1/cliente/nif?nif=121192024
+router.get("/nif", async (req, res) => {
+  const { nif } = req.query;
+  const clienteByNif = await mostrarClientePorNif(nif);
+  res.json(respostaPadrao(true, "Operação bem sucedida", clienteByNif));
+});
 // POST http://localhost:3000/api/v1/cliente/
 router.post("/", async (req, res, next) => {
   const ID = generateRandomHashId()
@@ -63,9 +94,6 @@ router.put("/", async (req, res, next) => {
     const dadosAtualizados = req.body;
 
     // Remover campos que não devem ser atualizados
-    delete dadosAtualizados.Entidade_ID; // Garante que `Entidade_ID` não será atualizado
-    delete dadosAtualizados.ID; // Garante que `ID` também não seja atualizado
-    // Adicionar DT_ALTERACAO aos dados que estão sendo atualizados
     dadosAtualizados.DT_ALTERACAO = DT_ALTERACAO;
 
     const cliente = await atualizarClientePorEntidade(

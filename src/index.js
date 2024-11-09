@@ -1,288 +1,62 @@
+// server.js
 import express from "express";
 import dotenv from "dotenv";
-import { toDataURL } from "qrcode";
-dotenv.config();
-import { createServer } from "http";
-import {
-  deletarClientePorEntidade,
-  mostrarClientePorEntidade,
-} from "../repositories/cliente.js";
-import mostrarTodoCliente from "../controller/mostrarTodoCliente.js";
-import mostrarTodoProduto from "../controller/mostrarTodoProduto.js";
-import { entidade } from "../repositories/entidade.js";
-import { auth } from "../repositories/login.js";
-import {
-  mostrarProdutoPeloNome,
-  mostrarProdutoPorBarCode,
-  mostrarProdutoPorCategoria,
-  mostrarProdutoPorEntidade,
-} from "../repositories/produto.js";
-import mostrarTodaCategoria from "../controller/mostrarTodaCategoria.js";
-import { mostrarCategoriaPorEntidade } from "../repositories/categorias.js";
-import {
-  adicionarVenda,
-  mostrarTodaVendaPorEntidade,
-} from "../repositories/vendas.js";
-import mostrarTodaVenda from "../controller/mostrarTodaVenda.js";
 import path from "path";
-
-import { verifyApiKey } from "../utils/verifyApiKey.js";
-import { gerarFaturaPDF } from "../utils/gerarFaturaPDF.js";
-import { Server } from "socket.io";
-import logger from "../utils/logger.js";
+import { createServer } from "http";
+import bodyParser from "body-parser"
 import { fileURLToPath } from "url";
-import { adicionarClientePorEntidade } from "../repositories/cliente.js";
-import { enviarDadosAoWebHook } from "../utils/enviarDadosAoWebHook.js";
-import { cacheMiddleware } from "../utils/cacheMiddleware.js";
+import { Server } from "socket.io";
+import routes from "../routes/index.js";
 import { loggerMiddleware } from "../middlewares/loggerMiddleware.js";
+import { errorMiddleware } from "../middlewares/errorMiddleware.js";
+import { configureRedis } from "../middlewares/cacheMiddleware.js";
+// import { gerarCodigoUsuario } from "../routes/gerarCodigoUsuario.js";
+
+
+// Carregar configurações do ambiente
+dotenv.config();
 
 const app = express();
 const server = createServer(app);
-app.set("view engine", "ejs");
 const io = new Server(server);
+app.use(bodyParser.json()); // Processa JSON
+app.use(bodyParser.urlencoded({ extended: false }));
+// Configuração do WebSocket para logs
 io.on("connection", (socket) => {
   console.log("Client connected");
 });
 
+// Definir o caminho correto para o diretório
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+app.use("/public", express.static(path.join(__dirname, "public")));
 
+app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
 
-app.use((req, res, next) => {
-  const logMessage = `${req.method} ${req.url}`;
-  logger.info(logMessage);
-  io.emit("log", logMessage); // Emitindo log para os clientes conectados
-  next();
-});
-
-// Configuração do middleware para analisar corpos de requisições HTTP com formato JSON
+// Middlewares globais
 app.use(express.json());
-app.use(loggerMiddleware(io));
+app.use(loggerMiddleware(io)); // Log de requisições
+const redisMiddleware = configureRedis(60);
+// Rotas
+app.use("/api/v1", routes);
+// Middleware de erro
+app.use(errorMiddleware);
 
+// Servir páginas estáticas
 app.get("/", (req, res) => {
-  res.sendFile(__dirname + "/index.html");
+  res.sendFile(path.join(__dirname, "/index.html"));
 });
+app.get("/admin", (req, res) => {
+  res.sendFile(path.join(__dirname, "/admin.html"));
+});
+
 app.get("/logs", (req, res) => {
-  res.sendFile(__dirname + "/logs.html");
+  res.sendFile(path.join(__dirname, "/logs.html"));
 });
-
-// Endpoint para retornar todos os clientes
-app.get(
-  "/api/v1/clientes",
-  verifyApiKey,
-  cacheMiddleware(60),
-  mostrarTodoCliente
-);
-
-app.post("/api/v1/cliente/", async (req, res) => {
-  const {IND_COLETIVO, DESIG,DESCR,NIF, EMAIL, TELEFONE, Entidade_ID } = req.body;
-  const NUM_CLIENTE = Math.floor(Math.random()*10) + 1
-  try {
-    const cliente = await adicionarClientePorEntidade(
-      IND_COLETIVO,
-      DESIG,
-      DESCR,
-      NIF,
-      NUM_CLIENTE,
-      EMAIL,
-      TELEFONE,
-      Entidade_ID
-    );
-    res.json({
-      success: true,
-      msg: "Operação bem sucedida",
-      data: [{numeroCliente: NUM_CLIENTE,codigo: "00023", id: "1209-44fdf-34342-424dds-424" }],
-    });
-  } catch (error) {
-    res.send({ error: error.message });
-  }
-});
-app.delete("/api/v1/cliente/", async (req, res) => {
-  const { clienteID, entidadeID } = req.query;
-  try {
-    const cliente = await deletarClientePorEntidade(clienteID, entidadeID);
-    res.send({
-      message: `Cliente com id ${clienteID} foi deletado com sucesso`,
-    });
-  } catch (error) {
-    res.status(500).send({ error: error.message });
-  }
-});
-// GET /api/v1/cliente?entidadeID=1233
-app.get(
-  "/api/v1/cliente/",
-  cacheMiddleware(60),
-  async (req, res) => {
-    const { entidadeID } = req.query;
-    try {
-      const cliente = await mostrarClientePorEntidade(entidadeID);
-      res.send(cliente);
-    } catch (error) {
-      res.status(500).send({ error: error.message });
-    }
-  }
-);
-
-// Endpoint para retornar todos os produtos
-app.get(
-  "/api/v1/produto",
-  cacheMiddleware(60),
-  mostrarTodoProduto
-);
-
-// Endpoint para buscar um produto específico pelo ID da entidade
-app.get(
-  "/api/v1/produto/",
-  cacheMiddleware(60),
-  async (req, res) => {
-    const { entidadeID } = req.query;
-    try {
-      const produto = await mostrarProdutoPorEntidade(entidadeID);
-      res.send(produto);
-    } catch (error) {
-      res.status(500).send({ error: error.message });
-    }
-  }
-);
-
-// Endpoint para buscar um produto pelo seu código de barras
-app.get("/api/v1/produto/barcode", async (req, res) => {
-  const { barcode } = req.query;
-  try {
-    const produto = await mostrarProdutoPorBarCode(barcode);
-
-    if (produto === undefined) {
-      return res.status(404).send({ message: "Produto não encontrado" });
-    }
-    res.send(produto);
-  } catch (error) {
-    res.status(500).send({ error: error.message });
-  }
-});
-// depois melhorar esse endpoint e emplementar no POS
-
-// Endpoint para buscar um produto pelo nome
-// app.get(
-//   "/api/v1/produto/nome/:produto_nome/:entidadeID",
-//   verifyApiKey,
-//   async (req, res) => {
-//     const { produto_nome, entidadeID } = req.params;
-//     try {
-//       const produto = await mostrarProdutoPeloNome(produto_nome, entidadeID);
-//       if (produto === undefined) {
-//         res.send({ message: "Usuario não encontrado" });
-//       }
-//       res.send(produto);
-//     } catch (error) {
-//       res.status(500).send({ error: error.message });
-//     }
-//   }
-// );
-
-//[] melhorar esse endpoint mas tarde para retornar produto pelo id de categoria
-
-// app.get(
-//   "/api/v1/produto/categoria/",
-//   async (req, res) => {
-//     const { categoriaID } = req.query;
-//     try {
-//       const produto = await mostrarProdutoPorCategoria(categoriaID);
-//       if (produto === undefined) {
-//         res.send({ message: "Usuario não encontrado" });
-//       }
-//       res.send(produto);
-//     } catch (error) {
-//       res.status(500).send({ error: error.message });
-//     }
-//   }
-// );
-
-// Endpoint para autenticar um usuário com base no nome de usuário e senha
-app.get("/api/v1/auth", async (req, res) => {
-  const { username, password } = req.query;
-  try {
-    const user = await auth(username, password);
-    if (user.length === 0) {
-      throw new Error("Nome de Usuario ou Senha incorretos");
-    } else {
-      res.send(user);
-    }
-  } catch (error) {
-    res.status(500).send({ error: error.message });
-  }
-});
-
-// Endpoint para buscar informações sobre uma entidade específica pelo ID
-app.get("/api/v1/entidade/", async (req, res) => {
-  const { id } = req.query;
-  try {
-    const user = await entidade(id);
-    if (user === undefined) {
-      res.send({ message: "Usuario não encontrado" });
-    }
-    res.send(user);
-  } catch (error) {
-    res.status(500).send({ error: error.message });
-  }
-});
-
-// Endpoint para retornar todas as categorias
-app.get("/api/v1/categoria", verifyApiKey, mostrarTodaCategoria);
-
-// Endpoint para buscar uma categoria específica pelo ID
-app.get("/api/v1/categoria/:id", async (req, res) => {
-  const { id } = req.params;
-  try {
-    const categroia = await mostrarCategoriaPorEntidade(id);
-    if (categroia === undefined) {
-      res.send({ message: "Usuario não encontrado" });
-    }
-    res.send(categroia);
-  } catch (error) {
-    res.status(500).send({ error: error.message });
-  }
-});
-app.get("/api/v1/vendas", cacheMiddleware(60), mostrarTodaVenda);
-// Endpoint para buscar todas as vendas associadas a uma entidade específica pelo ID
-app.get("/api/v1/vendas/:id", verifyApiKey, async (req, res) => {
-  const { id } = req.params;
-  try {
-    const vendas = await mostrarTodaVendaPorEntidade(id);
-    if (vendas === undefined) {
-      res.send({ message: "vendas não encontrado" });
-    }
-    res.send(vendas);
-  } catch (error) {
-    res.status(500).send({ error: error.message });
-  }
-});
-app.post("/api/v1/venda/", async (req, res) => {
-  try {
-    const { Entidade_ID, UTILIZADOR, Itens_Comprados, Valor_Total } = req.body;
-
-    if (!Entidade_ID || !UTILIZADOR || !Itens_Comprados || !Valor_Total) {
-      return res.status(400).json({ error: "Dados da venda incompletos" });
-    }
-
-    const venda = await adicionarVenda(
-      Entidade_ID,
-      UTILIZADOR,
-      Itens_Comprados,
-      Valor_Total
-    );
-    await gerarFaturaPDF(venda, res);
-    enviarDadosAoWebHook(venda);
-  } catch (error) {
-    console.error("Erro ao registrar venda:", error);
-    res.status(500).json({ error: "Erro ao registrar venda" });
-  }
-});
-
-// Porta na qual o servidor será iniciado
+// console.log(gerarCodigoUsuario("da33.veiga@gmail.com"))
+// Iniciar servidor
 const PORT = 3000;
-
-// Início do servidor na porta especificada
 server.listen(PORT, () => {
   console.log(`Servidor rodando na porta ${PORT}`);
 });

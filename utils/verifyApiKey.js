@@ -1,9 +1,8 @@
-export function verifyApiKey(req, res, next) {
-  const apikey = req.headers["authorization"];
-  const validApiKey = process.env.APIKEY;
-
-  if (!apikey || apikey !== validApiKey) {
-    return res.status(401).json({ message: "a chave da api esta faltando" });
+// middlewares/verifyApiKey.js
+export const verifyApiKey = (req, res, next) => {
+  const apiKey = req.headers["api-key"];
+  if (apiKey !== process.env.API_KEY) {
+    return res.status(403).json({ error: "Chave de API inválida" });
   }
   next();
-}
+};

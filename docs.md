@@ -270,3 +270,19 @@ app.post("/api/v1/vendas/:id/fatura", verifyApiKey, async (req, res) => {
 server.listen(3000, () => {
   console.log("Server is running on port 3000");
 });
+
+
+
+
+
+formato normal das respostas
+   res.json({
+       success: true,
+       msg: "Operação bem sucedida",
+       data: [
+         {
+           numeroCliente: NUM_CLIENTE,
+           id: ID,
+         },
+       ],
+     });

@@ -21,7 +21,7 @@ export async function gerarFaturaPDF(venda, res) {
 
   venda.Itens_Comprados.forEach((item) => {
     invoiceData.itens.push({
-      precoUni: parseFloat(item.PrecoDoProduto),
+      preco: parseFloat(item.PrecoDoProduto) || 0,
       quantidade: parseFloat(item.quantidade) || 0,
       total: parseFloat(item.total) || 0,
     });
@@ -37,12 +37,12 @@ export async function gerarFaturaPDF(venda, res) {
     );
 
     const options = {
-      format: "A5",
+      format: "A4",
       border: {
         top: "2mm",
         right: "2mm",
         bottom: "2mm",
-        left: "2mm",
+        left: "1mm",
       },
       footer: {
         height: "8mm",

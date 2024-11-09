@@ -1,18 +1,19 @@
 // arquivo principal de rotas para clientes
 import { Router } from "express";
-import { adicionarVenda, mostrarTodaAsVendas, mostrarTodaVendaPorEntidade } from "../repositories/vendas.js";
+import { adicionarVenda, mostrarTodaAsVendas, mostrarVendasporEntidade } from "../repositories/vendas.js";
 import { gerarFaturaPDF } from "../utils/gerarFaturaPDF.js";
 import { enviarDadosAoWebHook } from "../utils/enviarDadosAoWebHook.js";
 import { respostaPadrao } from "../utils/responseDefault.js";
+import mostrarCondicaoPagamento from "../controller/mostrarCondicaoPagamento.js";
 
 const router = Router();
 // GET http://localhost:3000/api/v1/venda/
 router.get("/", mostrarTodaAsVendas)
 
 // GET http://localhost:3000/api/v1/venda/entidade?id=A56CA66F-54DB-4953-88FE-47C8C7D653B3
-router.get("/entidade", async (req, res) => {
+router.get("/entidade",async (req, res) => {
   const { id } = req.query; //query que toma o ID e envia para a função
-  const vendasByEntidade = await mostrarTodaVendaPorEntidade(id); // componente função que retorna os dados
+  const vendasByEntidade = await mostrarVendasporEntidade(id); // componente função que retorna os dados
   res.json(respostaPadrao(true, "Operação bem sucedida",vendasByEntidade));
   // res.json(vendasByEntidade);// dados retornados em formato JSON
 });
@@ -24,7 +25,7 @@ router.post("/", async (req, res, next) => {
     if (!Entidade_ID || !UTILIZADOR || !Itens_Comprados || !Valor_Total) {
       return res
         .status(400)
-        .json(respostaPadrao(true, "Operação não sucedida dados incompletos"));
+        .json(respostaPadrao(flase, "Operação não sucedida dados incompletos"));
     }
 
     const venda = await adicionarVenda(
@@ -44,16 +45,5 @@ router.post("/", async (req, res, next) => {
     });
   }
 });
-// // DELETE /api/v1/cliente?clienteid=123&entidadeid=456
-// router.delete("/", async (req, res, next) => {
-//   try {
-//     const { clienteid, entidadeid } = req.query; // Pegando os valores de query string
-//     const cliente = await deletarClientePorEntidade(clienteid, entidadeid);
-//     res.send({
-//       message: `Cliente com id ${clienteID} foi deletado com sucesso`,
-//     });
-//   } catch (error) {
-//     next(error);
-//   }
-// });
+
 export default router;

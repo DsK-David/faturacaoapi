@@ -1,5 +1,5 @@
-import { mostrarTodaCategoria } from "../repositories/categorias.js";
 import { mostrarTodaAsVendas } from "../repositories/vendas.js";
+import { respostaPadrao } from "../utils/responseDefault.js";
 export default async function (req,res){
     try {
         const resultado = await mostrarTodaAsVendas()
